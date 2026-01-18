@@ -1,0 +1,4546 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Warp Stage1+2+3 Deep Space Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+  <style>
+    @font-face {
+      font-family: "Kan412TyposStd";
+      src: url("fonts/Kan412TyposStd-Regular.otf") format("opentype");
+      font-weight: normal;
+      font-style: normal;
+    }
+    body {
+  font-family: "Zen Maru Gothic", sans-serif;
+}
+
+    html, body {
+      margin:0;
+      overflow:hidden;
+      background:#000;
+    }
+    #threeContainer{
+      position:fixed;
+      inset:0;
+      z-index:1;
+    }
+    #artCanvas{
+      position:fixed;
+      inset:0;
+      z-index:5;
+      background:transparent;
+      pointer-events:none;
+    }
+    #uiCanvas{
+      position:fixed;
+      inset:0;
+      z-index:6;
+      background:transparent;
+      pointer-events:none;
+    }
+    #goStage3Btn{
+      position:fixed;
+      top:16px;
+      right:16px;
+      z-index:20;
+      padding:8px 16px;
+      font-size:14px;
+      background:rgba(20,25,40,0.85);
+      border:1px solid rgba(255,255,255,0.4);
+      color:white;
+      border-radius:6px;
+      cursor:pointer;
+      display:none;
+    }
+    #galleryBtn{
+      position:fixed;
+      top:16px;
+      left:16px;
+      z-index:20;
+      padding:8px 12px;
+      font-size:14px;
+      background:rgba(20,25,40,0.85);
+      border:1px solid rgba(255,255,255,0.4);
+      color:white;
+      border-radius:6px;
+      cursor:pointer;
+      display:none;
+    }
+    #videoElement{
+      display:block;
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      z-index:2;
+      opacity:0;
+      pointer-events:none;
+      transform:scaleX(-1);
+      transition:opacity 0.3s ease;
+    }
+    #videoElement.stage1Visible{
+      opacity:0.2;
+    }
+    /* 画廊覆盖层 */
+    #galleryOverlay{
+      position:fixed;
+      inset:0;
+      z-index:60;
+      background:rgba(0,0,0,0.85);
+      display:none;
+      color:white;
+      padding:28px;
+      box-sizing:border-box;
+    }
+    #galleryOverlay .closeBtn{
+      position:absolute;
+      top:12px;
+      right:12px;
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.25);
+      color:white;
+      padding:6px 10px;
+      border-radius:6px;
+      cursor:pointer;
+    }
+    #galleryInner{
+      position:relative;
+      margin-top:8px;
+      height:calc(100% - 64px);
+      overflow-x:auto;
+      overflow-y:hidden;
+      white-space:nowrap;
+      display:flex;
+      flex-wrap:wrap;
+      align-content:flex-start;
+      gap:12px;
+      padding-bottom:12px;
+    }
+    .galleryTile{
+      display:inline-block;
+      width:260px;
+      height:150px;
+      background:rgba(10,12,18,0.6);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:8px;
+      padding:6px;
+      box-sizing:border-box;
+      flex: 0 0 auto;
+      position:relative;
+    }
+    .galleryTile img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      border-radius:6px;
+      display:block;
+    }
+    .galleryMeta{
+      position:absolute;
+      left:8px;
+      bottom:8px;
+      right:48px;
+      font-size:12px;
+      color:#fff;
+      text-shadow:0 1px 4px rgba(0,0,0,0.6);
+    }
+    .galleryDel{
+      position:absolute;
+      right:8px;
+      bottom:8px;
+      padding:6px;
+      background:rgba(255,20,20,0.95);
+      border-radius:6px;
+      cursor:pointer;
+      font-size:12px;
+      border:none;
+      color:white;
+    }
+
+    /* 标题覆盖层 */
+    #titleOverlay{
+      position:fixed;
+      inset:0;
+      z-index:40;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:auto;
+      color:white;
+      font-family: "Kan412TyposStd", "漢字タイポス４１２ Std", "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      background: transparent;
+    }
+    #titleCard{
+      text-align:center;
+      padding:0;
+      background: none;
+      border: none;
+      transform: translateY(-35px);
+    }
+    @keyframes floatY {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    @keyframes glow {
+      0% { text-shadow: 0 0 6px rgba(255,255,255,0.55), 0 0 20px rgba(120,180,255,0.06); }
+      50% { text-shadow: 0 0 18px rgba(255,255,255,0.95), 0 0 40px rgba(120,180,255,0.25); }
+      100% { text-shadow: 0 0 6px rgba(255,255,255,0.55), 0 0 20px rgba(120,180,255,0.06); }
+    }
+    #titleCard h1{
+      margin:0 0 8px 0;
+      font-size:40px;
+      font-family: "Kan412TyposStd", "漢字タイポス４１２ Std", "Helvetica Neue", Arial, sans-serif;
+      letter-spacing:3px;
+      color:#eaf6ff;
+      text-shadow:
+        0 0 6px rgba(210,240,255,0.9),
+        0 8px 24px rgba(10,16,30,0.55);
+      animation: floatY 3.8s ease-in-out infinite, glow 2.6s ease-in-out infinite;
+      will-change: transform, text-shadow;
+    }
+    #stageSelectButtons{
+      margin-top:32px;
+      display:none;
+      flex-direction:column;
+      gap:12px;
+      align-items:center;
+    }
+    #stageSelectButtons.visible{
+      display:flex;
+    }
+    .stageSelectBtn{
+      padding:10px 24px;
+      font-size:14px;
+      background:rgba(20,25,40,0.75);
+      border:1px solid rgba(255,255,255,0.3);
+      color:white;
+      border-radius:8px;
+      cursor:pointer;
+      transition:all 0.3s ease;
+      min-width:180px;
+      letter-spacing:1px;
+    }
+    .stageSelectBtn:hover{
+      background:rgba(40,50,70,0.85);
+      border-color:rgba(255,255,255,0.5);
+      transform:translateY(-2px);
+      box-shadow:0 4px 12px rgba(120,180,255,0.3);
+    }
+
+    /* --- Style 01: Cinematic Blur (电影字幕风) --- */
+    #tipOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none; /* 允许点击穿透 */
+      background: transparent; /* 移除背景色，只展示文字 */
+      perspective: 1000px;
+    }
+    #tipText {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-size: 24px;
+      font-weight: 500;
+      line-height: 2.2;
+      color: #fff;
+      text-align: center;
+      letter-spacing: 0.2em; /* 宽字间距增加高级感 */
+      max-width: 900px;
+      margin: 0 auto;
+      /* 核心：光晕效果 */
+      text-shadow: 0 0 10px rgba(255,255,255,0.6), 0 0 20px rgba(180,220,255,0.4), 0 0 40px rgba(180,220,255,0.2);
+      /* 动画初始状态：模糊、微放大、透明 */
+      opacity: 0;
+      transform: scale(1.1);
+      filter: blur(10px);
+      /* 优雅的长过渡 */
+      transition: opacity 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    /* 激活状态：清晰、聚焦 */
+    #tipOverlay.visible #tipText {
+      opacity: 1;
+      transform: scale(1);
+      filter: blur(0px);
+    }
+
+    /* Container for the clockwork animation */
+    .s1-wrap {
+      position: relative;
+      width: 600px;
+      height: 600px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transform: scale(0.65); /* Scale down to 65% as requested */
+    }
+
+    /* --- OUTER RING --- */
+    .s1-ring-outer {
+      position: absolute;
+      width: 480px; height: 480px;
+      border-radius: 50%;
+      border: 1px solid rgba(238, 207, 161, 0.3);
+      box-shadow: 0 0 30px rgba(238, 207, 161, 0.1);
+      animation: rotate-cw 80s linear infinite;
+      opacity: 0; transform: scale(0.9);
+      transition: opacity 1.5s, transform 1.5s cubic-bezier(0.2, 1, 0.3, 1);
+    }
+    .s1-ring-outer::after {
+      content: ''; position: absolute; inset: 5px; border-radius: 50%;
+      border: 1px solid rgba(238, 207, 161, 0.15);
+    }
+
+    /* --- MID RING (SVG) --- */
+    .s1-ring-svg {
+      position: absolute;
+      width: 360px; height: 360px;
+      animation: rotate-cw 40s linear infinite;
+      opacity: 0; transform: scale(0.8);
+      transition: opacity 1.2s, transform 1.2s cubic-bezier(0.2, 1, 0.3, 1);
+    }
+
+    .svg-circle-path {
+      fill: none;
+      stroke: #eecfa1;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-dasharray: 570;
+      stroke-dashoffset: 570; /* Initial hidden */
+    }
+
+    /* Active State: SVG Fade In & Draw */
+    .s1-wrap.active .s1-ring-svg { opacity: 1; transform: scale(1); }
+    .s1-wrap.active .svg-circle-path { animation: draw-circle 2s cubic-bezier(0.4, 0, 0.2, 1) forwards 0.3s; }
+    @keyframes draw-circle { to { stroke-dashoffset: 0; } }
+
+    /* --- PARTICLES --- */
+    .orbit-layer {
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0; transition: opacity 1s ease 0.5s;
+    }
+    .s1-wrap.active .orbit-layer { opacity: 1; }
+
+    .layer-slow { animation: rotate-cw 100s linear infinite; }
+    .layer-med  { animation: rotate-cw 60s linear infinite; }
+    .layer-fast { animation: rotate-cw 30s linear infinite; }
+
+    .star-p {
+      position: absolute;
+      background: #fff5d0; /* Gold glow */
+      border-radius: 50%;
+      top: 50%; left: 50%;
+      opacity: 0; transform: translate(0, 0) scale(0);
+    }
+
+    @keyframes star-fade-in {
+      0% { opacity: 0; transform: var(--target-transform) scale(0); }
+      50% { opacity: var(--target-opacity); transform: var(--target-transform) scale(1.2); }
+      100% { opacity: var(--target-opacity); transform: var(--target-transform) scale(1); }
+    }
+
+    /* --- TEXT --- */
+    .s1-text-box {
+      z-index: 999;
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: #eecfa1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      width: 100%;
+      pointer-events: none;
+    }
+
+    .s1-title {
+      font-family: "Shippori Mincho", serif;
+      font-size: 36px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      color: #eecfa1;
+      text-shadow: 0 0 30px rgba(238, 207, 161, 0.8);
+      margin: 0; white-space: nowrap;
+      opacity: 0; transform: scale(1.1); filter: blur(10px);
+      transition: all 1.8s cubic-bezier(0.2, 1, 0.3, 1) 0.5s;
+    }
+
+    .s1-line {
+      width: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, #eecfa1, transparent);
+      opacity: 0.8;
+      transition: width 1.2s ease 1s;
+    }
+
+    .s1-desc {
+      font-family: "Shippori Mincho", serif;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+      opacity: 0; transform: translateY(10px);
+      transition: all 1.2s ease 1.2s;
+    }
+
+    /* Active State: Text */
+    .s1-wrap.active .s1-ring-outer { opacity: 1; transform: scale(1); }
+    .s1-wrap.active .s1-title { opacity: 1; transform: scale(1); filter: blur(0); }
+    .s1-wrap.active .s1-line { width: 140px; }
+    .s1-wrap.active .s1-desc { opacity: 1; transform: translateY(0); }
+
+    @keyframes rotate-cw { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+    #fadeOverlay{
+      position:fixed;
+      inset:0;
+      z-index:45;
+      background:#000;
+      opacity:0;
+      transition:opacity 0.8s ease;
+      pointer-events:none;
+      display:none;
+    }
+    #fadeOverlay.visible{
+      opacity:1;
+    }
+
+    #toolOverlay{
+      position:fixed;
+      top:50%;
+      right:24px;
+      transform:translateY(-50%);
+      z-index:30;
+      display:none;
+      flex-direction:column;
+      gap:14px;
+      pointer-events:none;
+    }
+    .toolBuoy{
+      width:82px;
+      padding:12px 10px;
+      text-align:center;
+      background:rgba(15,18,30,0.55);
+      border:1px solid rgba(255,255,255,0.18);
+      color:#cfe3ff;
+      border-radius:16px;
+      font-size:13px;
+      letter-spacing:1px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.35);
+      transition:transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    .toolBuoy .toolIcon{
+      display:block;
+      font-size:18px;
+      margin-bottom:4px;
+    }
+    .toolBuoy.active{
+      border-color:rgba(255,255,255,0.7);
+      color:#ffffff;
+      transform:scale(1.06);
+      box-shadow:0 0 24px rgba(120,180,255,0.45);
+    }
+
+    #stage1Hint, #stage2Hint, #stage1_5Hint, #stage1_5ProgressHint, #stage2TopHint{
+      position:fixed;
+      top:80px;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:28;
+      color:#ffffff;
+      font-size:14px;
+      text-align:center;
+      display:none;
+      pointer-events:none;
+      line-height:1.8;
+      opacity:0;
+      transition:opacity 0.6s ease-in;
+      text-shadow:
+        0 0 10px rgba(255,255,255,0.8),
+        0 0 20px rgba(255,255,255,0.5),
+        0 0 30px rgba(255,255,255,0.3);
+    }
+    #stage1Hint.visible, #stage2Hint.visible, #stage1_5Hint.visible, #stage1_5ProgressHint.visible, #stage2TopHint.visible{
+      opacity:1;
+    }
+    /* --- 新增：Stage 1.5 星座进度条样式 --- */
+    #stage1_5ProgressBar{
+      position:fixed;
+      z-index:29;
+      display:none;
+      pointer-events:none;
+      top:50%;
+      left:50%;
+      transform:translate(-50%, -50%);
+      /* 容器尺寸 */
+      width:300px;
+      height:120px;
+    }
+    #stage1_5ProgressBar.visible{
+      display:block;
+    }
+    /* 捏合识别圈 (Target Zone) */
+    .p09-target-zone{
+      position:absolute;
+      top:50%; left:50%;
+      transform:translate(-50%, -50%);
+      width:70px; height:70px;
+      border-radius:50%;
+      border:1px solid rgba(255, 255, 255, 0.15);
+      background:radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 70%);
+      z-index:0;
+      /* 待机动画：缓慢呼吸，提示用户捏这里 */
+      animation:breathe 3s ease-in-out infinite;
+      transition:all 0.2s ease-out;
+    }
+    /* 捏合激活状态：微缩、微亮、无动画 (不抢进度条风头) */
+    .p09-target-zone.active{
+      animation:none; /* 停止呼吸 */
+      transform:translate(-50%, -50%) scale(0.9); /* 微微缩小，模拟受力 */
+      border-color:rgba(238, 207, 161, 0.5); /* 变淡金 */
+      background:radial-gradient(circle, rgba(238, 207, 161, 0.1) 0%, transparent 70%);
+      box-shadow:0 0 15px rgba(238, 207, 161, 0.2); /* 微弱光晕 */
+    }
+    @keyframes breathe{
+      0%, 100% { transform:translate(-50%, -50%) scale(1); border-color:rgba(255,255,255,0.15); box-shadow:0 0 0 rgba(0,0,0,0); }
+      50% { transform:translate(-50%, -50%) scale(1.1); border-color:rgba(255,255,255,0.3); box-shadow:0 0 10px rgba(255,255,255,0.05); }
+    }
+    /* 进度条结构 */
+    .p09-bar-wrapper{
+      position:absolute;
+      top:50%; left:0;
+      width:100%; height:20px;
+      transform:translateY(-50%);
+      z-index:1;
+    }
+    /* 背景线 (暗) */
+    .p09-line-bg{
+      position:absolute; top:50%; left:0; width:100%; height:1px; 
+      background:rgba(255,255,255,0.15);
+    }
+    /* 进度线 (亮) */
+    .p09-line-fg{
+      position:absolute; top:50%; left:0; width:0%; height:2px;
+      background:#fff;
+      box-shadow:0 0 8px #fff; /* 发光强度高于圆圈 */
+      transition:width 0.1s linear;
+    }
+    /* 节点 (星星) */
+    .p09-dot{
+      position:absolute; top:50%; margin-top:-3px; 
+      width:6px; height:6px; 
+      background:#222; border:1px solid #555; border-radius:50%; 
+      transition:all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .d1 { left:0%; }
+    .d2 { left:33%; }
+    .d3 { left:66%; }
+    .d4 { left:100%; margin-left:-6px; }
+    /* 节点激活 */
+    .p09-dot.active{ 
+      background:#fff; border-color:#fff; 
+      box-shadow:0 0 12px #fff, 0 0 5px var(--gold);
+      transform:scale(1.6); 
+    }
+    #stage1Hint .countdown-text{
+      animation:stage1Glow 1.5s ease-in-out infinite;
+    }
+    @keyframes stage1Glow {
+      0%, 100% {
+        text-shadow:
+          0 0 10px rgba(255,255,255,0.8),
+          0 0 20px rgba(255,255,255,0.5),
+          0 0 30px rgba(255,255,255,0.3);
+      }
+      50% {
+        text-shadow:
+          0 0 20px rgba(255,255,255,1),
+          0 0 40px rgba(255,255,255,0.8),
+          0 0 60px rgba(255,255,255,0.5);
+      }
+    }
+
+    #stage3BoundaryHint{
+      position:fixed;
+      top:50%;
+      right:24px;
+      transform:translateY(-50%);
+      z-index:30;
+      color:#e2f3ff;
+      font-size:12px;
+      padding:6px 12px;
+      border-radius:999px;
+      background:rgba(10,18,30,0.45);
+      border:1px solid rgba(180,220,255,0.55);
+      box-shadow:0 0 10px rgba(120,180,255,0.35);
+      text-shadow:0 0 6px rgba(120,180,255,0.7);
+      display:none;
+      pointer-events:none;
+      white-space:nowrap;
+      animation:pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.8; transform: translateY(-50%) scale(1); }
+      50% { opacity: 1; transform: translateY(-50%) scale(1.05); }
+    }
+    
+    /* 穿越文字样式 */
+    .warpTextLine {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-size: 18px;
+      line-height: 1.8;
+      text-align: center;
+      white-space: nowrap;
+      opacity: 1;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
+                   0 0 20px rgba(255, 255, 255, 0.5);
+      transition: opacity 1.5s ease-out, transform 1.5s ease-out;
+      width: 100%;
+    }
+    .warpTextLine.fadeUp {
+      opacity: 0.2;
+    }
+  </style>
+</head>
+
+<body>
+
+<video id="videoElement" playsinline></video>
+<button id="goStage3Btn">▶ 星空へ</button>
+<button id="galleryBtn">≡ ギャラリー</button>
+<div id="threeContainer"></div>
+<canvas id="artCanvas"></canvas>
+<canvas id="uiCanvas"></canvas>
+
+<div id="galleryOverlay">
+  <button class="closeBtn">閉じる</button>
+  <div id="galleryInner"></div>
+</div>
+
+<div id="titleOverlay">
+  <div id="titleCard">
+    <h1>てのひら星座工房</h1>
+    <div id="stageSelectButtons">
+      <button class="stageSelectBtn" data-stage="1">Stage 1: 星座を描く</button>
+      <button class="stageSelectBtn" data-stage="2">Stage 2: 絵を描く</button>
+      <button class="stageSelectBtn" data-stage="3">Stage 3: 星空ギャラリー</button>
+    </div>
+  </div>
+</div>
+
+<div id="instructionText" style="position:fixed;bottom:150px;left:50%;transform:translateX(-50%);z-index:100;font-size:12px;opacity:0.85;display:block;color:rgba(255,255,255,0.85);text-align:center;">手を開いたり閉じたりして、前後へ進んでみよう<br>手を開き続けると、銀河の中へ進んで、ゲームがスタートします。</div>
+
+<div id="warpOverlay" style="position:fixed;inset:0;z-index:90;background:rgba(0,0,0,0.3);display:none;pointer-events:none;transition:opacity 1.5s ease-in-out;"></div>
+
+<div id="warpTextContainer" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:91;display:none;pointer-events:none;width:100%;height:0;"></div>
+
+<div id="tipOverlay">
+  <div class="s1-wrap" id="mysticClockwork" style="display: none;">
+    <div class="s1-ring-outer"></div>
+    
+    <svg class="s1-ring-svg" viewBox="0 0 360 360">
+      <g style="opacity: 0.6;">
+        <path class="svg-circle-path" d="M 180 5 A 175 175 0 0 1 180 355" />
+        <path class="svg-circle-path" d="M 180 355 A 175 175 0 0 1 180 5" />
+      </g>
+    </svg>
+    
+    <div class="orbit-layer layer-slow" id="layer1"></div>
+    <div class="orbit-layer layer-med" id="layer2"></div>
+    <div class="orbit-layer layer-fast" id="layer3"></div>
+
+    <div class="s1-text-box">
+      <div class="s1-title">星座が完成しました</div>
+      <div class="s1-line"></div>
+      <div class="s1-desc">あなたの描いた星座は、<br>いま星空でやさしく輝いています。</div>
+    </div>
+  </div>
+  <div id="tipText"></div>
+</div>
+
+<div id="fadeOverlay"></div>
+
+<div id="toolOverlay">
+  <div class="toolBuoy" data-tool="pen">
+    <span class="toolIcon">✦</span>
+    <span class="toolLabel">画筆</span>
+  </div>
+  <div class="toolBuoy" data-tool="eraser">
+    <span class="toolIcon">⌦</span>
+    <span class="toolLabel">消しゴム</span>
+  </div>
+</div>
+
+<div id="stage1Hint"></div>
+
+<div id="stage1_5Hint">親指と人差し指を軽くくっつけると、線が出る、離す → 線が止まる</div>
+
+<div id="stage1_5ProgressHint">中央のプログレスバーを長押ししてください</div>
+
+<div id="stage1_5ProgressBar">
+  <div class="p09-target-zone" id="p09-target"></div>
+  <div class="p09-bar-wrapper">
+    <div class="p09-line-bg"></div>
+    <div class="p09-line-fg" id="p09-line"></div>
+    
+    <div class="p09-dot d1" id="p09-d1"></div>
+    <div class="p09-dot d2" id="p09-d2"></div>
+    <div class="p09-dot d3" id="p09-d3"></div>
+    <div class="p09-dot d4" id="p09-d4"></div>
+  </div>
+</div>
+
+
+<div id="stage2Hint"></div>
+
+<div id="stage2TopHint">描き終わったら、両手でそっと押し返すようにすると、<br>星座が星空の奥へと飛んでいきます。</div>
+
+<div id="stage3BoundaryHint">もう一度スワイプするとタイトルの空にもどります</div>
+
+<script>
+
+// 共通
+let stage = 0; // 0=title, 1=Stage1, 1.5=Stage1.5(教学), 2=Stage2, 3=Stage3
+let lastActivityTime = performance.now();
+const INACTIVITY_TIMEOUT = 30000;
+
+// Stage 1 淡入变量
+let stage1Opacity = 1.0;
+let stage1AppearStart = 0;
+let stage1AppearDuration = 1000;
+
+function updateActivityTime(){
+  lastActivityTime = performance.now();
+}
+
+function returnToTitle(){
+  stage = 0;
+  stage2Warping = false;
+  stage2HandInitialDist = null;
+  stage2PushFrames = 0;
+  
+  // 重置 Stage1 标语序列状态
+  stage1TipSequenceState = "waiting";
+  stage1GestureDetectionStartTime = 0;
+  if(stage1TipSequenceTimer) {
+    clearTimeout(stage1TipSequenceTimer);
+    stage1TipSequenceTimer = null;
+  }
+  
+  // 重置右边界状态
+  RIGHT_BOUNDARY.isAtBoundary = false;
+  RIGHT_BOUNDARY.isBouncing = false;
+  
+  // 清除 3D 锁定星星（如果有）
+  if(lockedFingerStars){
+    scene.remove(lockedFingerStars.group);
+    if(lockedFingerStars.geo) lockedFingerStars.geo.dispose();
+    if(lockedFingerStars.mat) lockedFingerStars.mat.dispose();
+    lockedFingerStars = null;
+  }
+
+  // 重置相机位置
+  camera.position.set(0, 0, 1200);
+  camTargetX = 0;
+  camTargetY = 0;
+  camTargetZ = 1200;
+  
+  // 清除画布（艺术层和 UI 层）
+  artCtx.clearRect(0, 0, W, H);
+  uiCtx.clearRect(0, 0, W, H);
+  inkCtx.clearRect(0, 0, W, H);
+  artCanvasDirty = false; // 重置脏标记
+
+  // 移除场景中临时对象 (3D 连线等)
+  for(let i = 0; i < creations.length; i++){
+    const rec = creations[i];
+    if(rec.group){
+      if(rec.group.parent) rec.group.parent.remove(rec.group);
+      if(rec.group.traverse){
+        rec.group.traverse(obj => {
+          if(obj.geometry) obj.geometry.dispose();
+          if(obj.material) {
+            if(Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+            else if(obj.material.dispose) obj.material.dispose();
+          }
+        });
+      }
+      rec.group = null;
+    }
+  }
+  
+  // 兜底清理
+  const objectsToRemove = [];
+  for(let i = scene.children.length - 1; i >= 0; i--){
+    const child = scene.children[i];
+    if(child instanceof THREE.Group){
+      const isUserCreation = child.userData && child.userData.isUserCreation === true;
+      const isInConstellationRange = child.position.z >= -2500 && child.position.z <= -1000;
+      if(isUserCreation || isInConstellationRange){
+        objectsToRemove.push(child);
+      }
+    }
+  }
+  objectsToRemove.forEach(obj => {
+    if(obj && obj.parent) obj.parent.remove(obj);
+  });
+  
+  renderer.render(scene, camera);
+  
+  // 重置标题界面状态
+  titleCameraZ = 24;
+  titleCameraTargetZ = 24;
+  titleWarpSpeed = 0;
+  targetTitleWarpSpeed = 0;
+  titleGalaxyRotationSpeed = 0.033;
+  titleTargetRotationSpeed = 0.033;
+  titleHandWasFist = false;
+  titleHandWasOpen = false;
+  
+  // 重置穿越文字状态
+  warpTextState.isActive = false;
+  warpTextState.currentLineIndex = 0;
+  warpTextState.currentCharIndex = 0;
+  warpTextState.autoMoving = false;
+  
+  // 隐藏穿越文字相关元素
+  const warpOverlay = document.getElementById("warpOverlay");
+  const warpTextContainer = document.getElementById("warpTextContainer");
+  if(warpOverlay) {
+    warpOverlay.style.display = "none";
+    warpOverlay.style.opacity = "";
+  }
+  if(warpTextContainer) {
+    warpTextContainer.innerHTML = "";
+    warpTextContainer.style.display = "none";
+  }
+  
+  // 显示标题覆盖层
+  const titleOverlay = document.getElementById("titleOverlay");
+  if(titleOverlay){
+    titleOverlay.style.display = "flex";
+    titleOverlay.style.opacity = "";
+  }
+  
+  // 显示提示文字（仅在标题界面显示）
+  const instructionText = document.getElementById("instructionText");
+  if(instructionText && stage === 0) {
+    instructionText.style.display = "block";
+    instructionText.style.opacity = "";
+  } else if(instructionText) {
+    // 非标题界面时隐藏
+    instructionText.style.display = "none";
+  }
+  
+  document.getElementById("goStage3Btn").style.display = "none";
+  document.getElementById("galleryBtn").style.display = "none";
+  const stage1Hint = document.getElementById("stage1Hint");
+  if(stage1Hint) {
+    stage1Hint.classList.remove("visible");
+    stage1Hint.style.display = "none";
+  }
+  const stage2Hint = document.getElementById("stage2Hint");
+  if(stage2Hint) {
+    stage2Hint.classList.remove("visible");
+    stage2Hint.style.display = "none";
+  }
+  const stage2TopHint = document.getElementById("stage2TopHint");
+  if(stage2TopHint) {
+    stage2TopHint.classList.remove("visible");
+    stage2TopHint.style.display = "none";
+  }
+  const stage1_5Hint = document.getElementById("stage1_5Hint");
+  if(stage1_5Hint) {
+    stage1_5Hint.classList.remove("visible");
+    stage1_5Hint.style.display = "none";
+  }
+  // 重置 Stage2 画笔误触检测状态
+  stage2LastPos = null;
+  stage2LastTime = null;
+  document.getElementById("stage3BoundaryHint").style.display = "none";
+  artCanvas.style.display = "none";
+  uiCanvas.style.display = "none";
+  
+  // 隐藏视频背景
+  const videoElement = document.getElementById("videoElement");
+  if(videoElement) {
+    videoElement.classList.remove("stage1Visible");
+  }
+  
+  // 重置相机位置到标题位置
+  camera.position.set(0, 0, 24);
+  
+  // 重置 Stage1.5 状态
+  stage1_5State = "waitingPinch";
+  stage1_5LineDrawn = false;
+  stage1_5StateChangeTime = 0;
+  stage1_5ProgressBarHolding = false;
+  stage1_5ProgressBarHoldStart = 0;
+  stage1_5ProgressBarLastValidTime = 0;
+  
+  // 重置 Stage2 推开检测状态
+  stage2PushInitialDist = null;
+  stage2PushMinDist = null;
+  stage2PushDetectionStartTime = 0;
+  
+  // 隐藏进度条相关元素
+  const progressHint = document.getElementById("stage1_5ProgressHint");
+  const progressBar = document.getElementById("stage1_5ProgressBar");
+  if(progressHint) {
+    progressHint.classList.remove("visible");
+    progressHint.style.display = "none";
+  }
+  if(progressBar) {
+    progressBar.classList.remove("visible");
+    progressBar.style.display = "none";
+    // 重置进度条 UI
+    const line = document.getElementById("p09-line");
+    if(line) line.style.width = "0%";
+    const dots = document.querySelectorAll(".p09-dot");
+    dots.forEach(d => d.classList.remove("active"));
+    const targetZone = document.getElementById("p09-target");
+    if(targetZone) targetZone.classList.remove("active");
+  }
+  
+  
+  prevPts = null;
+  stillFrames = 0;
+  savedPolygonGlobal = null;
+  strokePolylines = [];
+  currentStrokePath = null;
+  penHist = [];
+  lastPen = null;
+  pinching = false;
+  
+  // 重置 Stage1 计时器
+  stage1StartTime = 0;
+  lastSecondPolygon = null;
+  
+  updateActivityTime();
+}
+
+let warpAmplifier = 1.0;
+
+//   标题界面：穿越文字显示
+const WARP_TEXT_MESSAGES = [
+  "ようこそ。<br>ここは、宇宙のはじっこで、星と星がつながって星座になるところ――星座工房。",
+  "ここでは、あなたの手が、星たちに新しい物語をあたえていきます。",
+  "まずは、あなたの最初の星座をつくってみましょう。"
+];
+
+let warpTextState = {
+  isActive: false,
+  currentLineIndex: 0,
+  currentCharIndex: 0,
+  lastUpdateTime: 0,
+  charInterval: 80,
+  lineInterval: 2000,
+  triggerZRange: [-5, 12],
+  autoMoving: false,
+  autoMoveSpeed: -0.15
+};
+
+let titleWarpSpeed = 0;
+let targetTitleWarpSpeed = 0;
+let titleCameraZ = 24;
+let titleCameraTargetZ = 24;
+let titleGalaxyRotationSpeed = 0.033;
+let titleTargetRotationSpeed = 0.033;
+
+// 标题手势状态
+let titleHandWasFist = false;
+let titleHandWasOpen = false;
+
+let stage2Warping = false;
+let stage2WarpStart = 0;
+let stage2WarpDuration = 1600;
+let stage2WarpStartZ = 0;
+let stage2WarpTargetZ = -15000;
+let stage2HandInitialDist = null;
+let stage2PushFrames = 0;
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+
+// 艺术层 Canvas：显示已完成的绘画
+const artCanvas = document.getElementById("artCanvas");
+artCanvas.width = W;
+artCanvas.height = H;
+const artCtx = artCanvas.getContext("2d");
+
+// UI 层 Canvas：高频交互元素（光标、进度条等）
+const uiCanvas = document.getElementById("uiCanvas");
+uiCanvas.width = W;
+uiCanvas.height = H;
+const uiCtx = uiCanvas.getContext("2d");
+
+
+function mirrorX(x){ return W - x; }
+function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+
+const FADE_DURATION = 800;
+const TIP_FADE_DURATION = 600;
+
+// Stage1：双手轮廓
+let prevPts=null;
+let stillFrames=0;
+const STILL_REQUIRED=180; // 用于动画效果
+let savedPolygonGlobal=null;
+let stage1StartTime=0; // Stage1 开始时间
+const STAGE1_DURATION=10000; // 10秒后自动进入 Stage1.5
+let lastSecondPolygon=null; // 最后一秒时的星座形状
+let latestValidPolygon=null; // 最近一次有效的星座形状
+
+// Stage1 标语序列状态
+let stage1TipSequenceState = "waiting"; // waiting, showingTip1, showingTip2, waitingGesture, showingTip3, completed
+let stage1TipSequenceTimer = null;
+let stage1GestureDetectionStartTime = 0; // 手势识别开始时间
+const STAGE1_TIP_DISPLAY_DURATION = 3000; // 每个标语显示3秒
+const STAGE1_GESTURE_DETECTION_DURATION = 5000; // 手势识别等待5秒
+
+//   Stage1.5：绘画教学
+let stage1_5State = "waitingPinch"; // waitingPinch, drawing, waitingRelease, complete, progressBar
+let stage1_5LineDrawn = false;
+let stage1_5StateChangeTime = 0;
+let stage1_5ProgressBarHolding = false;
+let stage1_5ProgressBarHoldStart = 0;
+const STAGE1_5_PROGRESS_DURATION = 3000; // 3秒
+
+// Stage2 到 Stage3 的手势检测状态（两手推开）
+let stage2PushInitialDist = null; // 两手推开的初始距离
+let stage2PushMinDist = null; // 两手推开过程中的最小距离（用于检测是否持续推开）
+const STAGE2_PUSH_REQUIRED_DISTANCE = 150; // 需要推开的最小距离（像素）
+let stage2PushDetectionStartTime = 0; // 开始检测推开的时间
+const STAGE2_PUSH_DETECTION_TIMEOUT = 5000; // 检测超时时间（5秒）
+
+// Stage1.5 进度条容错状态
+let stage1_5ProgressBarLastValidTime = 0; // 最后一次有效检测的时间
+const STAGE1_5_PROGRESS_GRACE_PERIOD = 300; // 宽限期（毫秒），允许短暂离开或松开
+
+// Stage2 画笔误触检测状态
+let stage2LastPos = null; // 上一帧的位置
+let stage2LastTime = null; // 上一帧的时间
+const STAGE2_MAX_SPEED = 3000; // 最大允许速度（像素/秒）
+const STAGE2_MAX_JUMP_DIST = 150; // 最大允许位置瞬移距离（像素）
+
+// 提取连线算法为独立函数，供stage1和stage3共用
+function computeConstellationEdges(pts, maxDistance = null){
+  if(!pts || pts.length < 2) return [];
+
+  const n = pts.length;
+  const edges = [];
+  for(let i=0;i<n;i++){
+    for(let j=i+1;j<n;j++){
+      const dx = pts[j].x - pts[i].x;
+      const dy = pts[j].y - pts[i].y;
+      const d = Math.hypot(dx,dy);
+      edges.push({i,j,dist:d});
+    }
+  }
+
+  const leftIdx = [0,1,2,3];
+  const rightIdx = [4,5,6,7];
+  const lr = [];
+  for(let li of leftIdx){
+    for(let ri of rightIdx){
+      if(li>=n || ri>=n) continue;
+      const dx = pts[ri].x - pts[li].x;
+      const dy = pts[ri].y - pts[li].y;
+      lr.push({i:li, j:ri, dist: Math.hypot(dx,dy)});
+    }
+  }
+  lr.sort((a,b)=>a.dist-b.dist);
+  const BRIDGE_COUNT = Math.min(4, lr.length);
+  const bridgeEdges = lr.slice(0, BRIDGE_COUNT);
+
+  const parent = new Array(n);
+  for(let i=0;i<n;i++) parent[i]=i;
+  const find=x=>parent[x]===x?x:(parent[x]=find(parent[x]));
+  const unite=(a,b)=>{ parent[find(a)] = find(b); };
+
+  const chosen = [];
+  const usedPairs = new Set();
+
+  for(const b of bridgeEdges){
+    chosen.push(b);
+    unite(b.i,b.j);
+    usedPairs.add(`${b.i}-${b.j}`);
+  }
+
+  edges.sort((a,b)=>a.dist-b.dist);
+  for(const e of edges){
+    if(find(e.i)!==find(e.j)){
+      unite(e.i,e.j);
+      chosen.push(e);
+      usedPairs.add(`${e.i}-${e.j}`);
+    }
+  }
+
+  const EXTRA_MAX = 10;
+  const MAX_DEGREE = 6;
+  const EXTRA_MAX_DIST = maxDistance || Math.max(W, H) * 0.12;
+  const degree = new Array(n).fill(0);
+  for(const e of chosen){ degree[e.i]++; degree[e.j]++; }
+
+  let extraAdded=0;
+  for(const e of edges){
+    if(extraAdded>=EXTRA_MAX) break;
+    const key=`${e.i}-${e.j}`;
+    if(usedPairs.has(key)) continue;
+    if(degree[e.i]>=MAX_DEGREE || degree[e.j]>=MAX_DEGREE) continue;
+    if(e.dist>EXTRA_MAX_DIST) continue;
+    chosen.push(e);
+    usedPairs.add(key);
+    degree[e.i]++; degree[e.j]++;
+    extraAdded++;
+  }
+
+  return chosen;
+}
+
+function drawStage1Polyline(pts, targetCtx = null){
+  if(!pts || pts.length < 2) return;
+  // 如果没有指定 context，默认使用 artCtx（向后兼容）
+  const c = targetCtx || artCtx;
+
+  const chosen = computeConstellationEdges(pts);
+
+  const g = c.createRadialGradient(W/2, H/2, W*0.05, W/2, H/2, W*0.8);
+  g.addColorStop(0, "rgba(90,140,255,0.07)");
+  g.addColorStop(1, "rgba(0,0,0,0)");
+  c.fillStyle = g;
+  c.fillRect(0,0,W,H);
+
+  c.save();
+  c.lineCap="round";
+  c.lineJoin="round";
+
+  c.lineWidth = 4.5;
+  c.strokeStyle = "rgba(255,255,255,0.28)";
+  for(const e of chosen){
+    const p1=pts[e.i], p2=pts[e.j];
+    c.beginPath();
+    c.moveTo(p1.x,p1.y);
+    c.lineTo(p2.x,p2.y);
+    c.stroke();
+  }
+
+  c.lineWidth = 1.2;
+  c.strokeStyle = "rgba(255,255,255,0.85)";
+  for(const e of chosen){
+    const p1=pts[e.i], p2=pts[e.j];
+    c.beginPath();
+    c.moveTo(p1.x,p1.y);
+    c.lineTo(p2.x,p2.y);
+    c.stroke();
+  }
+
+  for(const e of chosen){
+    const p1=pts[e.i], p2=pts[e.j];
+    const dx=p2.x-p1.x, dy=p2.y-p1.y;
+    const len=Math.hypot(dx,dy);
+    const starCount = Math.max(1, Math.floor(len/60));
+    for(let s=0;s<starCount;s++){
+      if(Math.random()<0.7) continue;
+      const t = Math.random();
+      const px = p1.x + dx*t + (Math.random()*6-3);
+      const py = p1.y + dy*t + (Math.random()*6-3);
+      const a = 0.25 + Math.random()*0.45;
+      c.fillStyle = `rgba(255,255,255,${a})`;
+      c.beginPath();
+      c.arc(px,py,1.5,0,Math.PI*2);
+      c.fill();
+    }
+  }
+
+  c.restore();
+
+  for(let p of pts){
+    c.beginPath();
+    c.arc(p.x,p.y,14,0,Math.PI*2);
+    c.fillStyle = "rgba(160,200,255,0.08)";
+    c.fill();
+
+    c.beginPath();
+    c.arc(p.x,p.y,8,0,Math.PI*2);
+    c.fillStyle = "rgba(220,240,255,0.28)";
+    c.fill();
+
+    c.beginPath();
+    c.arc(p.x,p.y,3.6,0,Math.PI*2);
+    c.fillStyle = "#ffffff";
+    c.fill();
+  }
+
+  if(stillFrames > STILL_REQUIRED * 0.6){
+    const t = (stillFrames / STILL_REQUIRED);
+    const pulse = Math.sin(t * Math.PI) * 0.3;
+    c.save();
+    c.globalCompositeOperation="lighter";
+    c.fillStyle = `rgba(200,220,255,${pulse*0.15})`;
+    c.fillRect(0,0,W,H);
+    c.restore();
+  }
+}
+
+function doStage1(){
+  // UI 层：每一帧清除并重绘实时连线
+  uiCtx.clearRect(0,0,W,H);
+  // 艺术层：Stage1 阶段不需要清除（没有已完成的绘画）
+
+  // 显示实时视频背景（仅在 stage1 显示）
+  const videoElement = document.getElementById("videoElement");
+  if(videoElement) {
+    videoElement.classList.add("stage1Visible");
+  }
+
+  // 检查手势识别并显示标语3（从标语2显示时就开始检测）
+  if(stage1TipSequenceState === "waitingGesture" || stage1TipSequenceState === "showingTip2") {
+    checkGestureAndShowTip3();
+  }
+
+  // 如果标语序列未完成，不开始倒计时，但允许绘制手势连线（从标语2开始）
+  if(stage1TipSequenceState !== "completed") {
+    // 从标语2开始，允许绘制手势连线（包括标语3出现期间）
+    if(stage1TipSequenceState === "showingTip2" || stage1TipSequenceState === "waitingGesture" || stage1TipSequenceState === "showingTip3") {
+      // 允许绘制手势连线，但不显示倒计时提示
+      if(handsData.length >= 2) {
+        let A=handsData[0], B=handsData[1];
+        let left  = A[0].x < B[0].x ? A : B;
+        let right = (left===A)? B : A;
+        const ids=[4,8,12,20];
+        let pts=[];
+        for(let i of ids) pts.push({x:mirrorX(left[i].x*W),  y:left[i].y*H});
+        for(let i of ids) pts.push({x:mirrorX(right[i].x*W), y:right[i].y*H});
+        // 实时连线绘制到 UI 层
+        drawStage1Polyline(pts, uiCtx);
+        latestValidPolygon = pts.map(p=>({...p}));
+        updateActivityTime();
+      }
+    }
+    return;
+  }
+
+  // 初始化 Stage1 开始时间（标语序列完成后）
+  if(stage1StartTime === 0){
+    stage1StartTime = performance.now();
+  }
+
+  // 显示提示元素（渐变出现）
+  const stage1Hint = document.getElementById("stage1Hint");
+  if(stage1Hint) {
+    stage1Hint.style.display = "block";
+    // 使用requestAnimationFrame确保display:block后再添加visible类
+    requestAnimationFrame(() => {
+      stage1Hint.classList.add("visible");
+    });
+  }
+
+  // 淡入逻辑：根据 stage1Opacity 控制透明度（UI 层）
+  if (stage === 1 && stage1Opacity < 1) {
+    const t = (performance.now() - stage1AppearStart) / stage1AppearDuration;
+    stage1Opacity = Math.min(1, t);
+    uiCtx.save();
+    uiCtx.globalAlpha = stage1Opacity;
+  } else {
+    uiCtx.save();
+  }
+
+  // 计算已过时间
+  const elapsed = performance.now() - stage1StartTime;
+  const remaining = Math.max(0, STAGE1_DURATION - elapsed);
+  const remainingSeconds = Math.ceil(remaining / 1000);
+
+  if(handsData.length<2){
+    prevPts=null;
+    // 更新提示文字：显示倒计时
+    if(stage1Hint) {
+      if(remainingSeconds > 0) {
+        stage1Hint.innerHTML = "10秒後に自動的に次の段階に進みます<br><span class='countdown-text'>残り " + remainingSeconds + "秒</span>";
+      } else {
+        stage1Hint.innerHTML = "10秒後に自動的に次の段階に進みます<br><span class='countdown-text'>まもなく次の段階へ進みます</span>";
+      }
+    }
+    uiCtx.restore();
+    
+    // 检查是否到达10秒
+    if(remaining <= 0){
+      // 尝试使用保存的形状或最近的有效形状
+      if(lastSecondPolygon){
+        savedPolygonGlobal = lastSecondPolygon.map(p=>({...p}));
+      } else if(latestValidPolygon) {
+        savedPolygonGlobal = latestValidPolygon.map(p=>({...p}));
+      }
+      
+      // 即使没有形状也强制进入下一阶段，防止卡住
+      stage1StartTime = 0; // 重置计时器
+      lastSecondPolygon = null;
+      document.getElementById("goStage3Btn").style.display="none";
+      // 隐藏提示（渐变消失）
+      if(stage1Hint) {
+        stage1Hint.classList.remove("visible");
+        setTimeout(() => {
+          stage1Hint.style.display = "none";
+        }, 600);
+      }
+      // 设置过渡状态，防止重复执行
+      if(stage !== "stage1To1_5"){
+        stage = "stage1To1_5";
+        // 显示全屏标语，然后进入 stage1.5
+        showStage1To1_5Tip();
+      }
+      return;
+    }
+    return;
+  }
+
+  updateActivityTime();
+
+  let A=handsData[0], B=handsData[1];
+  let left  = A[0].x < B[0].x ? A : B;
+  let right = (left===A)? B : A;
+
+  const ids=[4,8,12,20];
+  let pts=[];
+  for(let i of ids) pts.push({x:mirrorX(left[i].x*W),  y:left[i].y*H});
+  for(let i of ids) pts.push({x:mirrorX(right[i].x*W), y:right[i].y*H});
+
+  // 实时连线绘制到 UI 层
+  drawStage1Polyline(pts, uiCtx);
+
+  // 保存最近一次有效的形状
+  latestValidPolygon = pts.map(p=>({...p}));
+
+  // 在最后一秒时保存星座形状
+  if(remaining <= 1000 && remaining > 0){
+    lastSecondPolygon = pts.map(p=>({...p}));
+  }
+
+  // 更新提示文字：显示倒计时
+    if(stage1Hint) {
+      if(remainingSeconds > 0) {
+      stage1Hint.innerHTML = "10秒後に自動的に次の段階に進みます<br><span class='countdown-text'>残り " + remainingSeconds + "秒</span>";
+      } else {
+      stage1Hint.innerHTML = "10秒後に自動的に次の段階に進みます<br><span class='countdown-text'>まもなく次の段階へ進みます</span>";
+    }
+  }
+
+  // 检查是否到达10秒
+  if(remaining <= 0){
+    // 使用最后一秒时保存的星座形状
+    if(lastSecondPolygon){
+      savedPolygonGlobal = lastSecondPolygon.map(p=>({...p}));
+    } else if(latestValidPolygon) {
+      // 如果没有最后一秒的形状，使用最近一次有效的形状
+      savedPolygonGlobal = latestValidPolygon.map(p=>({...p}));
+    } else {
+      // 如果没有保存，使用当前形状
+      savedPolygonGlobal = pts.map(p=>({...p}));
+    }
+    // stage1 已结束，保存星座形状并显示全屏标语
+    stage1StartTime = 0; // 重置计时器
+    lastSecondPolygon = null;
+    document.getElementById("goStage3Btn").style.display="none";
+    // 隐藏 stage1 提示
+    if(stage1Hint) {
+      stage1Hint.classList.remove("visible");
+      setTimeout(() => {
+        stage1Hint.style.display = "none";
+      }, 600);
+    }
+    // stage1 已结束，设置一个过渡状态，保留背景但不再执行 stage1 逻辑
+    if(stage !== "stage1To1_5"){
+      stage = "stage1To1_5"; // 临时状态，用于显示标语
+      // 显示全屏标语
+      showStage1To1_5Tip();
+    }
+  }
+
+  prevPts = pts.map(p=>({...p}));
+  uiCtx.restore();
+}
+
+//   Stage1.5：绘画教学
+function doStage1_5(){
+  // UI 层：每一帧清除并重绘交互元素
+  uiCtx.clearRect(0,0,W,H);
+  
+  // 艺术层：只在脏标记为 true 时更新（减少不必要的重绘）
+  if(artCanvasDirty){
+    artCtx.clearRect(0,0,W,H);
+    // 显示星座背景（静态，绘制到艺术层）
+    if(savedPolygonGlobal) {
+      drawStage1Polyline(savedPolygonGlobal, artCtx);
+    }
+    // 显示已完成的绘画内容
+    artCtx.drawImage(inkCanvas,0,0);
+    artCanvasDirty = false; // 清除脏标记
+  }
+
+  // 显示实时视频背景（和 stage1 一样）
+  const videoElement = document.getElementById("videoElement");
+  if(videoElement) {
+    videoElement.classList.add("stage1Visible");
+  }
+
+  // 显示提示
+  const stage1_5Hint = document.getElementById("stage1_5Hint");
+  if(stage1_5Hint) {
+    stage1_5Hint.style.display = "block";
+    requestAnimationFrame(() => {
+      stage1_5Hint.classList.add("visible");
+    });
+  }
+
+  // 状态机处理
+  const now = performance.now();
+
+  if(handsData.length === 0) {
+    // 没有检测到手时，确保提示文字显示
+    if(stage1_5State === "waitingPinch" && stage1_5Hint) {
+      stage1_5Hint.innerHTML = "親指と人差し指を軽くくっつけると、あなたの指先は 「星空のペン」 になります。";
+    }
+    return;
+  }
+
+  let h = handsData[0];
+  if(!h[8] || !h[4]) {
+    // 手指数据不完整时，确保提示文字显示
+    if(stage1_5State === "waitingPinch" && stage1_5Hint) {
+      stage1_5Hint.innerHTML = "親指と人差し指を軽くくっつけると、あなたの指先は 「星空のペン」 になります。";
+    }
+    return;
+  }
+
+  updateActivityTime();
+
+  let x = mirrorX(h[8].x*W);
+  let y = h[8].y*H;
+  let tx = mirrorX(h[4].x*W);
+  let ty = h[4].y*H;
+
+  let d = Math.hypot(x-tx, y-ty);
+  let pos = {x, y};
+
+    // 通用绘画逻辑：在整个 stage1.5 阶段都允许绘画（除了 progressBar 状态）
+    if(stage1_5State !== "progressBar"){
+    // 检测是否捏住（使用稍微宽松的阈值以提高稳定性）
+    if(!pinching && d < PINCH_ON * 1.1){
+      // 检测到捏住，开始绘画
+      pinching = true;
+      penHist = [];
+      lastPen = null;
+      if(!currentStrokePath) currentStrokePath = [];
+      
+      // 如果是第一次进入 drawing 状态，初始化计时器
+      if(stage1_5State === "waitingPinch"){
+        stage1_5State = "drawing";
+        stage1_5StateChangeTime = now;
+        stage1_5LineDrawn = false;
+      }
+    } else if(pinching && d < PINCH_ON){
+      // 正在绘制中
+      penHist.push(pos);
+      if(penHist.length > MAX_HISTORY) penHist.shift();
+
+      let p = smooth();
+      if(p){
+        if(!lastPen){
+          currentStrokePath.push({x:p.x, y:p.y});
+          lastPen = {x:p.x, y:p.y};
+        } else if(Math.hypot(p.x-lastPen.x, p.y-lastPen.y) > 2){
+          // 正在绘制的线条：先绘制到 UI 层（实时反馈）
+          // 完成后再绘制到 inkCanvas（永久存储）
+          currentStrokePath.push({x:p.x, y:p.y});
+          lastPen = {x:p.x, y:p.y};
+        }
+      }
+      
+      // 用户正在绘制或已经绘制过：开始计时
+      // 如果还没有开始计时，初始化计时器
+      if(!stage1_5LineDrawn){
+        stage1_5LineDrawn = true;
+        stage1_5StateChangeTime = now; // 重置计时器，开始2秒倒计时
+      }
+      
+      // 等待2秒后自动切换提示（仅在 waitingPinch 或 drawing 状态）
+      if((stage1_5State === "waitingPinch" || stage1_5State === "drawing")){
+        const elapsed = now - stage1_5StateChangeTime;
+        if(elapsed >= 2000){
+          stage1_5State = "waitingRelease";
+          stage1_5StateChangeTime = now;
+          if(stage1_5Hint) {
+            stage1_5Hint.innerHTML = "親指と人差し指を離してみましょう";
+          }
+        }
+      }
+      
+      drawToolPointer(p || pos, {tool: "pen", passive: false});
+    } else if(pinching && d > PINCH_OFF){
+      // 用户放开了：将完成的线条绘制到 inkCanvas 并更新艺术层
+      pinching = false;
+      let hasDrawnLine = false;
+      if(currentStrokePath && currentStrokePath.length >= 2){
+        // 绘制到 inkCanvas（永久存储）
+        inkCtx.strokeStyle = "#ffffff";
+        inkCtx.lineWidth = PEN_LINE_WIDTH;
+        inkCtx.lineCap = "round";
+        inkCtx.beginPath();
+        inkCtx.moveTo(currentStrokePath[0].x, currentStrokePath[0].y);
+        for(let i = 1; i < currentStrokePath.length; i++){
+          inkCtx.lineTo(currentStrokePath[i].x, currentStrokePath[i].y);
+        }
+        inkCtx.stroke();
+        
+        // 设置脏标记，让艺术层在下一帧更新
+        artCanvasDirty = true;
+        
+        strokePolylines.push(currentStrokePath);
+        hasDrawnLine = true;
+      }
+      currentStrokePath = null;
+      penHist = [];
+      lastPen = null;
+      
+      // 如果用户正在绘制或已经绘制过，检查是否已经过了2秒
+      if(stage1_5LineDrawn && (stage1_5State === "waitingPinch" || stage1_5State === "drawing")){
+        const elapsed = now - stage1_5StateChangeTime;
+        if(elapsed >= 2000){
+          // 已经过了2秒，切换到第二句
+          stage1_5State = "waitingRelease";
+          stage1_5StateChangeTime = now;
+          if(stage1_5Hint) {
+            stage1_5Hint.innerHTML = "親指と人差し指を離してみましょう";
+          }
+        }
+      }
+      
+      // 如果在 waitingRelease 状态，完成第二次绘制后进入 complete 状态
+      if(stage1_5State === "waitingRelease" && hasDrawnLine && strokePolylines.length >= 2){
+        stage1_5State = "complete";
+        stage1_5StateChangeTime = now;
+      }
+      
+      // 如果没有捏住，显示被动指针
+      if(stage1_5State !== "waitingRelease" && stage1_5State !== "complete" && stage1_5State !== "progressBar"){
+        drawToolPointer(pos, {tool: "pen", passive: true});
+      }
+    } else if(!pinching){
+      // 没有捏住，显示被动指针（除了特定状态）
+      if(stage1_5State !== "waitingRelease" && stage1_5State !== "complete" && stage1_5State !== "progressBar"){
+        drawToolPointer(pos, {tool: "pen", passive: true});
+      }
+    }
+  }
+
+    // 状态机逻辑：控制提示文字的显示
+    if(stage1_5State === "waitingPinch"){
+    // 确保提示文字显示
+    if(stage1_5Hint) {
+      stage1_5Hint.innerHTML = "親指と人差し指を軽くくっつけると、あなたの指先は 「星空のペン」 になります。";
+    }
+  } else if(stage1_5State === "drawing"){
+    // drawing 状态的提示文字由通用绘画逻辑控制
+  } else if(stage1_5State === "waitingRelease"){
+    // 显示提示文字
+    if(!pinching && stage1_5Hint) {
+      stage1_5Hint.innerHTML = "親指と人差し指を離してみましょう";
+    }
+    
+    // 如果用户完成了第二次绘制并放开，进入完成状态
+    // 这个逻辑已经在通用绘画逻辑中处理了，这里只需要检查状态转换
+    // 注意：由于绘画逻辑在前面已经处理，这里只需要管理状态转换
+  } else if(stage1_5State === "complete"){
+    // 完成教学，等待2秒后进入进度条阶段
+    const elapsed = now - stage1_5StateChangeTime;
+    if(stage1_5Hint) {
+      stage1_5Hint.innerHTML = "星空で絵を描くコツをマスターしました！";
+    }
+    
+    if(elapsed >= 2000){
+      // 进入进度条阶段
+      stage1_5State = "progressBar";
+      stage1_5StateChangeTime = now;
+      stage1_5ProgressBarHolding = false;
+      stage1_5ProgressBarHoldStart = 0;
+      
+      // 立即隐藏完成提示（不等待动画）
+      if(stage1_5Hint) {
+        stage1_5Hint.classList.remove("visible");
+        stage1_5Hint.style.display = "none";
+      }
+      
+      // 显示进度条提示和进度条
+      const progressHint = document.getElementById("stage1_5ProgressHint");
+      const progressBar = document.getElementById("stage1_5ProgressBar");
+      if(progressHint) {
+        progressHint.style.display = "block";
+        requestAnimationFrame(() => {
+          progressHint.classList.add("visible");
+        });
+      }
+      if(progressBar) {
+        progressBar.classList.add("visible");
+        // 初始化进度条 UI
+        const line = document.getElementById("p09-line");
+        if(line) line.style.width = "0%";
+        const dots = document.querySelectorAll(".p09-dot");
+        dots.forEach(d => d.classList.remove("active"));
+        const targetZone = document.getElementById("p09-target");
+        if(targetZone) targetZone.classList.remove("active");
+      }
+    }
+  } else if(stage1_5State === "progressBar"){
+    // 确保完成提示已隐藏
+    if(stage1_5Hint) {
+      stage1_5Hint.classList.remove("visible");
+      stage1_5Hint.style.display = "none";
+    }
+    // 进度条阶段：检测手势是否在进度条中间位置并捏住
+    const progressBar = document.getElementById("stage1_5ProgressBar");
+    const progressHint = document.getElementById("stage1_5ProgressHint");
+    
+    if(!progressBar) return;
+    
+    // 确保进度条已显示
+    if(!progressBar.classList.contains("visible")) {
+      progressBar.classList.add("visible");
+    }
+    
+    // 获取进度条的位置和大小（屏幕坐标）
+    const barRect = progressBar.getBoundingClientRect();
+    if(barRect.width === 0 || barRect.height === 0) {
+      // 进度条还没有渲染，等待下一帧
+      return;
+    }
+    
+    // 检测手势位置（使用食指和拇指中心位置）
+    // 确保h存在且有必要的关键点
+    if(!h || !h[8] || !h[4]) {
+      return;
+    }
+    
+    // 手势坐标（画布坐标系统）
+    let handX = mirrorX(h[8].x * W);
+    let handY = h[8].y * H;
+    let thumbX = mirrorX(h[4].x * W);
+    let thumbY = h[4].y * H;
+    
+    // 计算手指中心位置（画布坐标）
+    const fingerCenterX = (handX + thumbX) / 2;
+    const fingerCenterY = (handY + thumbY) / 2;
+    
+    // 计算食指和拇指之间的距离（用于检测是否捏住）
+    const pinchDist = Math.hypot(handX - thumbX, handY - thumbY);
+    
+    // 进度条中心位置（屏幕坐标）
+    const barCenterXScreen = barRect.left + barRect.width / 2;
+    const barCenterYScreen = barRect.top + barRect.height / 2;
+    
+    // 将屏幕坐标转换为画布坐标
+    // 假设画布和屏幕大小一致（W和H是画布尺寸）
+    const barCenterX = barCenterXScreen;
+    const barCenterY = barCenterYScreen;
+    
+    // 检测是否在进度条中间区域（增大容错范围）
+    // 使用较大的容错范围，因为进度条在屏幕中央
+    const tolerance = Math.max(barRect.width * 0.6, 80); // 允许60%的宽度误差，但至少80px
+    const isInBarArea = Math.abs(fingerCenterX - barCenterX) < tolerance &&
+                        Math.abs(fingerCenterY - barCenterY) < tolerance;
+    
+    // 检测是否捏住（使用更宽松的阈值）
+    const isPinching = pinchDist < PINCH_ON * 2.0; // 允许稍微松开一点，使用2.0倍阈值（更宽松）
+    
+    // 判断当前是否满足条件
+    const isValidNow = isInBarArea && isPinching;
+    
+    
+    if(isValidNow){
+      // 更新最后一次有效检测的时间
+      stage1_5ProgressBarLastValidTime = now;
+      
+      // 在进度条中间且捏住
+      if(!stage1_5ProgressBarHolding){
+        // 开始按住
+        stage1_5ProgressBarHolding = true;
+        stage1_5ProgressBarHoldStart = now;
+      }
+      
+      // 计算进度
+      const holdElapsed = now - stage1_5ProgressBarHoldStart;
+      const progress = Math.min(100, (holdElapsed / STAGE1_5_PROGRESS_DURATION) * 100);
+      
+      // 1. 更新识别圈的激活状态 (捏合反馈)
+      const targetZone = document.getElementById("p09-target");
+      if(targetZone){
+        if(stage1_5ProgressBarHolding){
+          targetZone.classList.add("active"); // 捏合：微缩微亮
+        } else {
+          targetZone.classList.remove("active"); // 松开：恢复呼吸
+        }
+      }
+      
+      // 2. 更新进度条宽度
+      const line = document.getElementById("p09-line");
+      if(line) {
+        line.style.width = progress + "%";
+      }
+      
+      // 3. 更新星星节点的点亮状态
+      const d1 = document.getElementById("p09-d1");
+      const d2 = document.getElementById("p09-d2");
+      const d3 = document.getElementById("p09-d3");
+      const d4 = document.getElementById("p09-d4");
+      if(d1) { if(progress > 0) d1.classList.add("active"); else d1.classList.remove("active"); }
+      if(d2) { if(progress > 33) d2.classList.add("active"); else d2.classList.remove("active"); }
+      if(d3) { if(progress > 66) d3.classList.add("active"); else d3.classList.remove("active"); }
+      if(d4) { if(progress >= 99) d4.classList.add("active"); else d4.classList.remove("active"); }
+      
+      // 如果进度条填满，显示过渡标语然后进入 Stage2
+      if(progress >= 100){
+        // 隐藏提示和进度条
+        if(progressHint) {
+          progressHint.classList.remove("visible");
+          setTimeout(() => {
+            progressHint.style.display = "none";
+          }, 600);
+        }
+        if(progressBar) {
+          progressBar.classList.remove("visible");
+          setTimeout(() => {
+            progressBar.style.display = "none";
+          }, 600);
+        }
+        // 重置 stage1 手势识别状态，防止重复触发
+        stage1TipSequenceState = "completed";
+        stage1GestureDetectionStartTime = 0;
+        // 显示过渡标语
+        showStage1_5To2Tip();
+      }
+    } else {
+      // 不在进度条区域或没有捏住
+      // 更新识别圈状态（松开状态）
+      const targetZone = document.getElementById("p09-target");
+      if(targetZone) {
+        targetZone.classList.remove("active"); // 松开：恢复呼吸
+      }
+      // 检查是否在宽限期内
+      const timeSinceLastValid = now - stage1_5ProgressBarLastValidTime;
+      if(timeSinceLastValid < STAGE1_5_PROGRESS_GRACE_PERIOD && stage1_5ProgressBarHolding){
+        // 在宽限期内，继续计算进度（不重置）
+        const holdElapsed = now - stage1_5ProgressBarHoldStart;
+        const progress = Math.min(100, (holdElapsed / STAGE1_5_PROGRESS_DURATION) * 100);
+        
+        // 更新进度条宽度
+        const line = document.getElementById("p09-line");
+        if(line) {
+          line.style.width = progress + "%";
+        }
+        
+        // 更新星星节点的点亮状态
+        const d1 = document.getElementById("p09-d1");
+        const d2 = document.getElementById("p09-d2");
+        const d3 = document.getElementById("p09-d3");
+        const d4 = document.getElementById("p09-d4");
+        if(d1) { if(progress > 0) d1.classList.add("active"); else d1.classList.remove("active"); }
+        if(d2) { if(progress > 33) d2.classList.add("active"); else d2.classList.remove("active"); }
+        if(d3) { if(progress > 66) d3.classList.add("active"); else d3.classList.remove("active"); }
+        if(d4) { if(progress >= 99) d4.classList.add("active"); else d4.classList.remove("active"); }
+      } else {
+        // 超过宽限期，重置
+        if(stage1_5ProgressBarHolding){
+          stage1_5ProgressBarHolding = false;
+          stage1_5ProgressBarHoldStart = 0;
+          stage1_5ProgressBarLastValidTime = 0;
+          // 重置进度条 UI
+          const line = document.getElementById("p09-line");
+          if(line) line.style.width = "0%";
+          const dots = document.querySelectorAll(".p09-dot");
+          dots.forEach(d => d.classList.remove("active"));
+          const targetZone = document.getElementById("p09-target");
+          if(targetZone) targetZone.classList.remove("active");
+        }
+      }
+    }
+    
+    // 显示提示
+    if(progressHint) {
+      progressHint.innerHTML = "中央のプログレスバーを長押ししてください";
+    }
+  }
+  
+  // 在 UI 层绘制正在绘制的线条（实时反馈）
+  if(currentStrokePath && currentStrokePath.length >= 2){
+    drawCurrentStrokePath(currentStrokePath, uiCtx);
+  }
+}
+
+// Stage2：绘画
+let inkCanvas=document.createElement("canvas");
+inkCanvas.width=W; inkCanvas.height=H;
+let inkCtx=inkCanvas.getContext("2d");
+
+let penHist=[];
+let lastPen=null;
+let pinching=false;
+
+const MAX_HISTORY=5;
+const PINCH_ON=35;
+const PINCH_OFF=65;
+
+// 生成圆形进度条的 clip-path 点
+function generateCircleClipPath(angleDeg) {
+  // 角度转换为弧度，从-90度开始（顶部）
+  const startAngle = -90;
+  const angleRad = (angleDeg * Math.PI) / 180;
+  const startRad = (startAngle * Math.PI) / 180;
+  
+  // 计算扇形的点
+  const points = [];
+  const centerX = 50; // 百分比
+  const centerY = 50; // 百分比
+  const radius = 50; // 百分比
+  
+  // 起始点：顶部中心
+  points.push(`${centerX}% ${centerY - radius}%`);
+  
+  // 如果角度大于0，添加扇形的弧线点
+  if (angleDeg > 0) {
+    // 计算结束角度
+    const endRad = startRad + angleRad;
+    
+    // 根据角度分段，每15度一个点
+    const segments = Math.ceil(angleDeg / 15);
+    for (let i = 1; i <= segments; i++) {
+      const segmentAngle = (angleDeg * i) / segments;
+      const segmentRad = startRad + (segmentAngle * Math.PI) / 180;
+      const x = centerX + radius * Math.cos(segmentRad);
+      const y = centerY + radius * Math.sin(segmentRad);
+      points.push(`${x}% ${y}%`);
+    }
+  }
+  
+  // 结束点：中心点
+  points.push(`${centerX}% ${centerY}%`);
+  
+  return points.join(', ');
+}
+
+const PEN_LINE_WIDTH = 3;
+const ERASER_LINE_WIDTH = PEN_LINE_WIDTH * 10;
+
+let strokePolylines=[];
+let currentStrokePath=null;
+// 艺术层脏标记：当 inkCanvas 内容变化时设置为 true，需要更新艺术层
+let artCanvasDirty = false;
+
+const toolOverlay = document.getElementById("toolOverlay");
+const toolButtons = {
+  pen: toolOverlay ? toolOverlay.querySelector('[data-tool="pen"]') : null,
+  eraser: toolOverlay ? toolOverlay.querySelector('[data-tool="eraser"]') : null
+};
+let currentTool="pen";
+const TOOL_LOCK_DURATION = 2000;
+let toolLockUntil = 0;
+
+function setToolLockNow(){
+  toolLockUntil = performance.now() + TOOL_LOCK_DURATION;
+}
+function setToolOverlayVisible(show){
+  if(!toolOverlay) return;
+  toolOverlay.style.display = show ? "flex" : "none";
+}
+function highlightTool(tool){
+  currentTool = tool;
+  for(let key in toolButtons){
+    if(!toolButtons[key]) continue;
+    toolButtons[key].classList.toggle("active", key === tool);
+  }
+}
+highlightTool("pen");
+
+function getToolHit(pos){
+  if(!toolOverlay || stage !== 2) return null;
+  const entries = Object.entries(toolButtons);
+  for(let [tool, el] of entries){
+    if(!el) continue;
+    const rect = el.getBoundingClientRect();
+    if(pos.x >= rect.left && pos.x <= rect.right && pos.y >= rect.top  && pos.y <= rect.bottom){
+      return tool;
+    }
+  }
+  return null;
+}
+
+function cloneStrokePolylines(){
+  return strokePolylines.map(path=>path.map(p=>({...p})));
+}
+
+function normalizeStrokePolylines(raw){
+  if(!raw) return [];
+  if(Array.isArray(raw) && raw.length>0 && Array.isArray(raw[0])){
+    return raw.map(path => path.map(pt=>({...pt})));
+  }
+  if(Array.isArray(raw)){
+    return raw.length ? [raw.map(pt=>({...pt}))] : [];
+  }
+  return [];
+}
+
+function smooth(){
+  if(penHist.length===0) return null;
+  let sx=0, sy=0, wsum=0;
+  for(let i=0;i<penHist.length;i++){
+    let w=i+1;
+    sx += penHist[i].x * w;
+    sy += penHist[i].y * w;
+    wsum+=w;
+  }
+  return {x:sx/wsum, y:sy/wsum};
+}
+
+// 在 UI 层绘制正在绘制的线条（实时反馈）
+function drawCurrentStrokePath(path, ctx = uiCtx){
+  if(!path || path.length < 2) return;
+  ctx.save();
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = PEN_LINE_WIDTH;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(path[0].x, path[0].y);
+  for(let i = 1; i < path.length; i++){
+    ctx.lineTo(path[i].x, path[i].y);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawToolPointer(p, options={}){
+  const tool = options.tool || currentTool;
+  const passive = !!options.passive;
+  if(!tool) return;
+  const isPen = tool === "pen";
+  uiCtx.save();
+  uiCtx.beginPath();
+  const radius = isPen ? 11 : 16;
+  if(passive){
+    uiCtx.strokeStyle = isPen ? "rgba(255,255,255,0.5)" : "rgba(255,200,120,0.5)";
+    uiCtx.fillStyle = isPen ? "rgba(255,255,255,0.08)" : "rgba(255,200,120,0.12)";
+    uiCtx.setLineDash([4,4]);
+  }else{
+    uiCtx.strokeStyle = isPen ? "rgba(255,255,255,0.9)" : "rgba(255,200,120,0.95)";
+    uiCtx.fillStyle = isPen ? "rgba(255,255,255,0.15)" : "rgba(255,200,120,0.18)";
+  }
+  uiCtx.lineWidth = 2;
+  uiCtx.arc(p.x, p.y, radius, 0, Math.PI*2);
+  uiCtx.fill();
+  uiCtx.stroke();
+  uiCtx.restore();
+}
+
+function drawEraserDashedBox(p, options={}){
+  const passive = !!options.passive;
+  uiCtx.save();
+  uiCtx.lineWidth = 2;
+  uiCtx.setLineDash([6,4]);
+  uiCtx.strokeStyle = passive ? "rgba(255,200,120,0.45)" : "rgba(255,200,120,0.95)";
+  uiCtx.fillStyle = passive ? "rgba(255,200,120,0.06)" : "rgba(255,200,120,0.10)";
+  const w = 40;
+  const h = 60;
+  uiCtx.beginPath();
+  uiCtx.rect(p.x - w/2, p.y - h/2, w, h);
+  uiCtx.fill();
+  uiCtx.stroke();
+  uiCtx.restore();
+}
+
+function eraseStrokeDataAtPoint(px, py, radius){
+  if(strokePolylines.length===0) return;
+  const updated=[];
+  for(let path of strokePolylines){
+    let seg=[];
+    for(let pt of path){
+      const dist = Math.hypot(pt.x - px, pt.y - py);
+      if(dist <= radius){
+        if(seg.length >= 2) updated.push(seg);
+        seg=[];
+      }else{
+        seg.push({...pt});
+      }
+    }
+    if(seg.length >= 2) updated.push(seg);
+  }
+  strokePolylines = updated;
+}
+
+function eraseStrokeDataBetween(a, b){
+  const radius = ERASER_LINE_WIDTH * 0.5;
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const dist = Math.hypot(dx, dy);
+  const steps = Math.max(1, Math.ceil(dist / Math.max(1, radius * 0.6)));
+  for(let i=0;i<=steps;i++){
+    const t = steps === 0 ? 0 : i / steps;
+    const px = a.x + dx * t;
+    const py = a.y + dy * t;
+    eraseStrokeDataAtPoint(px, py, radius);
+  }
+}
+
+function trySelectTool(pos){
+  const hit = getToolHit(pos);
+  if(!hit) return false;
+  highlightTool(hit);
+  setToolLockNow();
+  penHist=[];
+  lastPen=null;
+  currentStrokePath=null;
+  return true;
+}
+
+function doStage2(){
+  // UI 层：每一帧清除并重绘交互元素
+  uiCtx.clearRect(0,0,W,H);
+  
+  // 艺术层：只在脏标记为 true 时更新（减少不必要的重绘）
+  if(artCanvasDirty){
+    artCtx.clearRect(0,0,W,H);
+    // 显示星座背景（静态，绘制到艺术层）
+    if(savedPolygonGlobal) {
+      drawStage1Polyline(savedPolygonGlobal, artCtx);
+    }
+    // 显示已完成的绘画内容
+    artCtx.drawImage(inkCanvas,0,0);
+    artCanvasDirty = false; // 清除脏标记
+  }
+
+  if(handsData.length===0) {
+    // 手消失时重置状态
+    stage2LastPos = null;
+    stage2LastTime = null;
+    return;
+  }
+
+  let h=handsData[0];
+  if(!h[8]||!h[4]) {
+    // 手指数据不完整时重置状态
+    stage2LastPos = null;
+    stage2LastTime = null;
+    return;
+  }
+
+  updateActivityTime();
+
+  let x = mirrorX(h[8].x*W);
+  let y = h[8].y*H;
+  let tx= mirrorX(h[4].x*W);
+  let ty= h[4].y*H;
+
+  let d = Math.hypot(x-tx, y-ty);
+  let pos={x,y};
+  const now = performance.now();
+
+  // 速度检测和位置瞬移检测
+  let isValidMovement = true;
+  if(stage2LastPos && stage2LastTime){
+    const timeDelta = (now - stage2LastTime) / 1000; // 转换为秒
+    const distDelta = Math.hypot(pos.x - stage2LastPos.x, pos.y - stage2LastPos.y);
+    
+    if(timeDelta > 0){
+      const speed = distDelta / timeDelta; // 像素/秒
+      
+      // 检测速度过快
+      if(speed > STAGE2_MAX_SPEED){
+        isValidMovement = false;
+      }
+      
+      // 检测位置瞬移
+      if(distDelta > STAGE2_MAX_JUMP_DIST){
+        isValidMovement = false;
+      }
+    }
+  }
+
+  // 更新上一帧的位置和时间
+  stage2LastPos = {x: pos.x, y: pos.y};
+  stage2LastTime = now;
+
+  if(!pinching && d<PINCH_ON){
+    // 检测到捏住手势，但需要验证移动是否有效
+    if(!isValidMovement){
+      // 移动异常，不识别为画笔操作，只显示被动指针
+      if(currentTool === "pen"){
+        drawToolPointer(pos,{tool:"pen", passive:true});
+      }else if(currentTool === "eraser"){
+        drawEraserDashedBox(pos,{passive:true});
+      }
+      return;
+    }
+    
+    if(trySelectTool(pos)){
+      return;
+    }
+    pinching=true;
+    penHist=[];
+    lastPen=null;
+
+    if(currentTool === "pen"){
+      if(performance.now() < toolLockUntil){
+        currentStrokePath = null;
+      }else{
+        currentStrokePath = [];
+      }
+    }else{
+      currentStrokePath=null;
+    }
+  }else if(pinching && d>PINCH_OFF){
+    // 用户放开了：将完成的线条绘制到 inkCanvas 并更新艺术层
+    if(currentTool === "pen" && currentStrokePath && currentStrokePath.length>=2){
+      // 绘制到 inkCanvas（永久存储）
+      inkCtx.strokeStyle="#ffffff";
+      inkCtx.lineWidth=PEN_LINE_WIDTH;
+      inkCtx.lineCap="round";
+      inkCtx.beginPath();
+      inkCtx.moveTo(currentStrokePath[0].x, currentStrokePath[0].y);
+      for(let i = 1; i < currentStrokePath.length; i++){
+        inkCtx.lineTo(currentStrokePath[i].x, currentStrokePath[i].y);
+      }
+      inkCtx.stroke();
+      
+      // 更新艺术层：重新绘制 inkCanvas 内容
+      artCtx.clearRect(0,0,W,H);
+      if(savedPolygonGlobal) {
+        drawStage1Polyline(savedPolygonGlobal, artCtx);
+      }
+      artCtx.drawImage(inkCanvas,0,0);
+      
+      strokePolylines.push(currentStrokePath);
+    }
+    currentStrokePath=null;
+    pinching=false;
+    penHist=[]; lastPen=null;
+    return;
+  }
+
+  if(!pinching){
+    if(currentTool === "pen"){
+      drawToolPointer(pos,{tool:"pen", passive:true});
+    }else if(currentTool === "eraser"){
+      drawEraserDashedBox(pos,{passive:true});
+    }
+    return;
+  }
+
+  // 在绘制过程中也检测移动异常
+  if(!isValidMovement){
+    // 移动异常，停止绘制
+    if(currentTool === "pen" && currentStrokePath && currentStrokePath.length>=2){
+      strokePolylines.push(currentStrokePath);
+    }
+    currentStrokePath=null;
+    pinching=false;
+    penHist=[];
+    lastPen=null;
+    // 显示被动指针
+    if(currentTool === "pen"){
+      drawToolPointer(pos,{tool:"pen", passive:true});
+    }else if(currentTool === "eraser"){
+      drawEraserDashedBox(pos,{passive:true});
+    }
+    return;
+  }
+
+  penHist.push(pos);
+  if(penHist.length>MAX_HISTORY) penHist.shift();
+
+  let p=smooth();
+  if(!p) return;
+
+  if(currentTool === "pen"){
+    const now = performance.now();
+    if(now < toolLockUntil){
+      lastPen = {x:p.x, y:p.y};
+      drawToolPointer(p, {tool:"pen", passive:false});
+      return;
+    }
+
+    if(!currentStrokePath) currentStrokePath=[];
+    if(!lastPen){
+      currentStrokePath.push({x:p.x,y:p.y});
+      lastPen={x:p.x,y:p.y};
+    }else if(Math.hypot(p.x-lastPen.x,p.y-lastPen.y)>2){
+      // 正在绘制的线条：先绘制到 UI 层（实时反馈）
+      // 完成后再绘制到 inkCanvas（永久存储）
+      currentStrokePath.push({x:p.x,y:p.y});
+      lastPen={x:p.x,y:p.y};
+    }
+  }else{
+    if(!lastPen) lastPen={x:p.x,y:p.y};
+    inkCtx.save();
+    inkCtx.globalCompositeOperation="destination-out";
+    inkCtx.strokeStyle="rgba(0,0,0,1)";
+    inkCtx.lineWidth=ERASER_LINE_WIDTH;
+    inkCtx.lineCap="round";
+    inkCtx.beginPath();
+    inkCtx.moveTo(lastPen.x,lastPen.y);
+    inkCtx.lineTo(p.x,p.y);
+    inkCtx.stroke();
+    inkCtx.restore();
+    eraseStrokeDataBetween(lastPen, {x:p.x,y:p.y});
+    lastPen={x:p.x,y:p.y};
+    // 橡皮擦操作后设置脏标记
+    artCanvasDirty = true;
+  }
+
+  if(currentTool === "pen"){
+    drawToolPointer(p,{tool:"pen", passive:false});
+  }else if(currentTool === "eraser"){
+    drawEraserDashedBox(p,{passive:false});
+  }
+  
+  // 在 UI 层绘制正在绘制的线条（实时反馈）
+  if(currentTool === "pen" && currentStrokePath && currentStrokePath.length >= 2){
+    drawCurrentStrokePath(currentStrokePath, uiCtx);
+  }
+}
+
+function resetStage2PushDetection(){
+  stage2HandInitialDist = null;
+  stage2PushFrames = 0;
+}
+
+function startStage2Warp(){
+  if(stage2Warping || stage !== 2) return;
+  stage2Warping = true;
+  stage2WarpStart = performance.now();
+  stage2WarpStartZ = camera.position.z;
+  stage2WarpTargetZ = -24000;
+  document.getElementById("goStage3Btn").style.display = "none";
+
+  // 确保已经有 3D 影子星座
+  if(!shadowConstellation){
+    prepareShadowConstellationForStage2();
+  }
+  // Warp 过程中由 3D 影子星座接管视觉
+  if(shadowConstellation){
+    shadowConstellation.visible = true;
+  }
+  // 开始 Warp 时关闭 2D 画布（避免前景的大星座"停在原地"）
+  artCanvas.style.display = "none";
+  uiCanvas.style.display = "none";
+}
+
+function finalizeStage2ToStage3(){
+  stage2Warping = false;
+  enterStage3FromStage2();
+}
+
+function detectStage2HandsAndMaybeWarp(){
+  if(stage !== 2 || stage2Warping) return;
+  
+  const now = performance.now();
+  
+  // 需要检测到两只手
+  if(!handsData || handsData.length < 2){
+    // 没有两只手时重置检测状态
+    if(stage2PushInitialDist !== null){
+      stage2PushInitialDist = null;
+      stage2PushMinDist = null;
+      stage2PushDetectionStartTime = 0;
+    }
+    return;
+  }
+
+  // 获取两只手的数据
+  let hand1 = handsData[0];
+  let hand2 = handsData[1];
+  
+  // 检查两只手的手指数据是否完整
+  if(!hand1[8] || !hand1[4] || !hand2[8] || !hand2[4]) {
+    if(stage2PushInitialDist !== null){
+      stage2PushInitialDist = null;
+      stage2PushMinDist = null;
+      stage2PushDetectionStartTime = 0;
+    }
+    return;
+  }
+
+  updateActivityTime();
+
+  // 计算两只手的食指和拇指中心位置
+  let hand1X = mirrorX(hand1[8].x * W);
+  let hand1Y = hand1[8].y * H;
+  let thumb1X = mirrorX(hand1[4].x * W);
+  let thumb1Y = hand1[4].y * H;
+  let hand1CenterX = (hand1X + thumb1X) / 2;
+  let hand1CenterY = (hand1Y + thumb1Y) / 2;
+  
+  let hand2X = mirrorX(hand2[8].x * W);
+  let hand2Y = hand2[8].y * H;
+  let thumb2X = mirrorX(hand2[4].x * W);
+  let thumb2Y = hand2[4].y * H;
+  let hand2CenterX = (hand2X + thumb2X) / 2;
+  let hand2CenterY = (hand2Y + thumb2Y) / 2;
+  
+  // 计算两只手之间的距离
+  const currentDist = Math.hypot(hand2CenterX - hand1CenterX, hand2CenterY - hand1CenterY);
+  
+  // 检测两只手是否都不在捏合状态
+  const hand1PinchDist = Math.hypot(hand1X - thumb1X, hand1Y - thumb1Y);
+  const hand2PinchDist = Math.hypot(hand2X - thumb2X, hand2Y - thumb2Y);
+  const hand1NotPinching = hand1PinchDist > PINCH_OFF;
+  const hand2NotPinching = hand2PinchDist > PINCH_OFF;
+  const bothHandsNotPinching = hand1NotPinching && hand2NotPinching;
+  
+  // 如果两只手都不在捏合状态
+  if(bothHandsNotPinching){
+    // 初始化检测状态
+    if(stage2PushInitialDist === null){
+      stage2PushInitialDist = currentDist;
+      stage2PushMinDist = currentDist;
+      stage2PushDetectionStartTime = now;
+    }
+    
+    // 更新最小距离（用于检测是否持续推开）
+    if(currentDist < stage2PushMinDist){
+      stage2PushMinDist = currentDist;
+    }
+    
+    // 计算推开的距离
+    const pushDistance = currentDist - stage2PushInitialDist;
+    
+    // 检查是否满足条件：推开距离足够大，且当前距离大于最小距离（确保是持续推开）
+    if(pushDistance >= STAGE2_PUSH_REQUIRED_DISTANCE && currentDist > stage2PushMinDist + 50){
+      // 满足条件，开始进入 Stage3
+      startStage2Warp();
+      // 重置检测状态
+      stage2PushInitialDist = null;
+      stage2PushMinDist = null;
+      stage2PushDetectionStartTime = 0;
+    } else if(now - stage2PushDetectionStartTime > STAGE2_PUSH_DETECTION_TIMEOUT){
+      // 超时，重置检测状态
+      stage2PushInitialDist = null;
+      stage2PushMinDist = null;
+      stage2PushDetectionStartTime = 0;
+    }
+  } else {
+    // 如果任何一只手在捏合状态，重置检测
+    if(stage2PushInitialDist !== null){
+      stage2PushInitialDist = null;
+      stage2PushMinDist = null;
+      stage2PushDetectionStartTime = 0;
+    }
+  }
+}
+
+
+//   Three.js 初始化
+const container = document.getElementById("threeContainer");
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, W/H, 1, 200000);
+// 初始相机位置设置为标题位置
+camera.position.set(0, 0, 24);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(W, H);
+renderer.setClearColor(0x000000, 1);
+container.appendChild(renderer.domElement);
+
+window.addEventListener("resize", ()=>{
+  W = window.innerWidth;
+  H = window.innerHeight;
+  artCanvas.width = W;
+  artCanvas.height = H;
+  uiCanvas.width = W;
+  uiCanvas.height = H;
+  inkCanvas.width = W;
+  inkCanvas.height = H;
+  renderer.setSize(W,H);
+  camera.aspect = W/H;
+  camera.updateProjectionMatrix();
+});
+
+//   标题界面星系背景（从背景.html移植）
+let titleGalaxyParticles = null;
+let titleNebulaBackground = null;
+let titleGalacticCore = null;
+let titleDeepStars = null;
+
+// 星系粒子参数
+const TITLE_GALAXY_PARAMS = {
+  count: 80000,
+  size: 0.2,
+  radius: 12,
+  branches: 3,
+  spin: 1,
+  randomness: 0.5,
+  randomnessPower: 3,
+  insideColor: '#ffce9e',
+  outsideColor: '#6c8dff',
+};
+
+// 创建深空背景星星 (Z轴纵深无限)
+function createTitleDeepStars() {
+  const count = 5000;
+  const positions = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+  
+  for(let i = 0; i < count; i++) {
+    // 广阔分布在 X/Y 平面
+    const r = 200 + Math.random() * 1800;
+    const theta = Math.random() * Math.PI * 2;
+    // 分布在 Z 轴 -20000 到 2000 之间 (涵盖超长穿越深度)
+    const z = -20000 + Math.random() * 22000;
+    
+    positions[i*3] = r * Math.cos(theta);
+    positions[i*3+1] = r * Math.sin(theta);
+    positions[i*3+2] = z;
+    
+    sizes[i] = 1.0 + Math.random() * 3.0;
+  }
+  
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+  
+  const material = new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: new THREE.Color(0xffffff) } },
+    vertexShader: `
+      attribute float size;
+      void main() {
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_Position = projectionMatrix * mvPosition;
+        float dist = length(mvPosition.xyz);
+        gl_PointSize = size * (1500.0 / max(dist, 1.0));
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor;
+      void main() {
+        vec2 uv = gl_PointCoord - vec2(0.5);
+        if(length(uv) > 0.5) discard;
+        float alpha = 1.0 - smoothstep(0.1, 0.5, length(uv));
+        gl_FragColor = vec4(uColor, alpha * 0.8);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+  
+  const points = new THREE.Points(geometry, material);
+  points.visible = true; // 默认显示，在标题界面显示
+  return points;
+}
+
+// 创建星系粒子系统
+function createTitleGalaxyParticles() {
+  const { count, radius, branches, spin, randomness, randomnessPower, insideColor, outsideColor, size } = TITLE_GALAXY_PARAMS;
+  
+  // 创建星星纹理
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  const centerX = 32;
+  const centerY = 32;
+  const radius_grad = 28;
+  const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius_grad);
+  gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  gradient.addColorStop(0.15, 'rgba(255, 255, 255, 0.9)');
+  gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.2)');
+  gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 64, 64);
+  const starTexture = new THREE.CanvasTexture(canvas);
+  starTexture.premultiplyAlpha = true;
+  
+  // 生成位置和颜色
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const colorInside = new THREE.Color(insideColor);
+  const colorOutside = new THREE.Color(outsideColor);
+  
+  for (let i = 0; i < count; i++) {
+    const i3 = i * 3;
+    const r = Math.random() * radius;
+    const spinAngle = r * spin;
+    const branchAngle = ((i % branches) / branches) * Math.PI * 2;
+    const randomX = Math.pow(Math.random(), randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * randomness * r;
+    const randomY = Math.pow(Math.random(), randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * randomness * r;
+    const randomZ = Math.pow(Math.random(), randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * randomness * r;
+    
+    positions[i3] = Math.cos(branchAngle + spinAngle) * r + randomX;
+    positions[i3 + 1] = randomY * 0.5;
+    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * r + randomZ;
+    
+    const mixedColor = colorInside.clone().lerp(colorOutside, r / radius);
+    colors[i3] = mixedColor.r;
+    colors[i3 + 1] = mixedColor.g;
+    colors[i3 + 2] = mixedColor.b;
+  }
+  
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  
+  const material = new THREE.PointsMaterial({
+    size: size,
+    map: starTexture,
+    sizeAttenuation: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.9,
+    alphaMap: starTexture,
+    alphaTest: 0.001
+  });
+  
+  const points = new THREE.Points(geometry, material);
+  const tiltRotation = 8 * (Math.PI / 180);
+  points.rotation.set(tiltRotation, 0, tiltRotation);
+  points.visible = true; // 默认显示，在标题界面显示
+  
+  return points;
+}
+
+// 创建星云背景
+function createTitleNebulaBackground() {
+  const nebulaVS = `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `;
+  
+  const nebulaFS = `
+    uniform float uTime;
+    uniform vec3 uColor1;
+    uniform vec3 uColor2;
+    uniform vec3 uColor3;
+    varying vec2 vUv;
+    float random(vec2 st) { return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123); }
+    float noise(vec2 st) {
+      vec2 i = floor(st);
+      vec2 f = fract(st);
+      float a = random(i);
+      float b = random(i + vec2(1.0, 0.0));
+      float c = random(i + vec2(0.0, 1.0));
+      float d = random(i + vec2(1.0, 1.0));
+      vec2 u = f * f * (3.0 - 2.0 * f);
+      return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+    }
+    float fbm(vec2 st) {
+      float v = 0.0;
+      float a = 0.5;
+      mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.50));
+      for (int i = 0; i < 5; ++i) {
+        v += a * noise(st);
+        st = rot * st * 2.0;
+        a *= 0.5;
+      }
+      return v;
+    }
+    void main() {
+      vec2 st = vUv * 3.0;
+      float q = fbm(st + uTime * 0.05);
+      vec2 r = vec2(fbm(st + q + uTime * 0.1 + vec2(1.7, 9.2)), fbm(st + q + uTime * 0.1 + vec2(8.3, 2.8)));
+      float f = fbm(st + r);
+      vec3 color = mix(uColor1, uColor2, clamp(f*f*4.0, 0.0, 1.0));
+      color = mix(color, uColor3, clamp(length(r), 0.0, 1.0));
+      float voidMask = smoothstep(0.2, 0.8, f);
+      color *= voidMask;
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `;
+  
+  const uniforms = {
+    uTime: { value: 0 },
+    uColor1: { value: new THREE.Color('#000000') },
+    uColor2: { value: new THREE.Color('#0b1026') },
+    uColor3: { value: new THREE.Color('#201130') },
+  };
+  
+  const geometry = new THREE.SphereGeometry(300, 64, 64);
+  const material = new THREE.ShaderMaterial({
+    uniforms: uniforms,
+    vertexShader: nebulaVS,
+    fragmentShader: nebulaFS,
+    side: THREE.BackSide,
+    transparent: false
+  });
+  
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.userData.uniforms = uniforms;
+  mesh.visible = true; // 默认显示，在标题界面显示
+  
+  return mesh;
+}
+
+// 创建银河核心
+function createTitleGalacticCore() {
+  const group = new THREE.Group();
+  
+  const geometry = new THREE.SphereGeometry(0.05, 32, 32);
+  const material = new THREE.MeshBasicMaterial({ color: '#ffeedd', toneMapped: false });
+  const mesh = new THREE.Mesh(geometry, material);
+  group.add(mesh);
+  
+  const light = new THREE.PointLight(0xffeedd, 5, 60, 2);
+  group.add(light);
+  group.userData.light = light;
+  group.userData.mesh = mesh;
+  group.visible = true; // 默认显示，在标题界面显示
+  
+  return group;
+}
+
+// 初始化标题背景
+function initTitleBackground() {
+  titleGalaxyParticles = createTitleGalaxyParticles();
+  titleNebulaBackground = createTitleNebulaBackground();
+  titleGalacticCore = createTitleGalacticCore();
+  titleDeepStars = createTitleDeepStars();
+  
+  scene.add(titleGalaxyParticles);
+  scene.add(titleNebulaBackground);
+  scene.add(titleGalacticCore);
+  scene.add(titleDeepStars);
+}
+
+// 更新标题背景动画
+let lastTitleBackgroundTime = performance.now();
+function updateTitleBackground() {
+  const now = performance.now();
+  const delta = (now - lastTitleBackgroundTime) / 1000;
+  lastTitleBackgroundTime = now;
+  
+  
+  if (stage !== 0) {
+    // 非标题界面时隐藏标题专属背景
+    if (titleGalaxyParticles) titleGalaxyParticles.visible = false;
+    if (titleNebulaBackground) titleNebulaBackground.visible = false;
+    if (titleGalacticCore) titleGalacticCore.visible = false;
+    if (titleDeepStars) titleDeepStars.visible = false;
+    return;
+  }
+  
+  // 标题界面时显示标题背景
+  if (titleGalaxyParticles) {
+    titleGalaxyParticles.visible = true;
+    titleGalaxyRotationSpeed += (titleTargetRotationSpeed - titleGalaxyRotationSpeed) * 0.05;
+    titleGalaxyParticles.rotation.y += delta * titleGalaxyRotationSpeed;
+  }
+  
+  if (titleDeepStars) {
+    titleDeepStars.visible = true;
+    titleDeepStars.rotation.z += delta * 0.005;
+  }
+  
+  if (titleNebulaBackground) {
+    if (warpTextState.isActive && warpTextState.autoMoving) {
+      titleNebulaBackground.visible = false;
+    } else {
+      titleNebulaBackground.visible = true;
+      const time = now * 0.001;
+      titleNebulaBackground.rotation.y = time * 0.02;
+      if (titleNebulaBackground.userData.uniforms) {
+        titleNebulaBackground.userData.uniforms.uTime.value = time * 0.2;
+      }
+    }
+  }
+  
+  if (titleGalacticCore) {
+    if (warpTextState.isActive && warpTextState.autoMoving) {
+      titleGalacticCore.visible = false;
+    } else {
+      titleGalacticCore.visible = true;
+      const time = now * 0.001;
+      const scale = 1 + Math.sin(time * 2.0) * 0.1;
+      if (titleGalacticCore.userData.mesh) {
+        titleGalacticCore.userData.mesh.scale.setScalar(scale);
+      }
+      if (titleGalacticCore.userData.light) {
+        titleGalacticCore.userData.light.intensity = 5 + Math.sin(time * 1.5) * 1.5;
+        const hue = 0.05 + Math.sin(time * 0.2) * 0.02;
+        titleGalacticCore.userData.light.color.setHSL(hue, 0.9, 0.6);
+      }
+    }
+  }
+  
+  // 更新标题界面相机位置
+  if (warpTextState.isActive && warpTextState.autoMoving) {
+    // 自动向前移动
+    titleCameraZ += warpTextState.autoMoveSpeed;
+    titleCameraTargetZ = titleCameraZ;
+  } else {
+    // 手势控制逻辑
+    titleWarpSpeed += (targetTitleWarpSpeed - titleWarpSpeed) * 0.1;
+    
+    if (Math.abs(titleWarpSpeed) > 0.005) {
+      titleCameraZ += titleWarpSpeed;
+      titleCameraTargetZ = titleCameraZ;
+    } else {
+      titleCameraZ += (titleCameraTargetZ - titleCameraZ) * 0.08;
+    }
+  }
+  
+  // 限制相机范围
+  if (titleCameraZ < -100) {
+    titleCameraZ = -100;
+    titleCameraTargetZ = -100;
+  }
+  if (titleCameraZ > 100) {
+    titleCameraZ = 100;
+    titleCameraTargetZ = 100;
+  }
+  
+  // 计算倾斜后的轨迹（6度倾斜）
+  const tiltAngle = 6 * (Math.PI / 180);
+  const initialZ = 24;
+  const y = (initialZ - titleCameraZ) * Math.tan(tiltAngle);
+  
+  camera.position.set(0, y, titleCameraZ);
+  
+  // 检测是否需要显示穿越文字
+  checkWarpTextTrigger();
+}
+
+// 初始化标题背景
+initTitleBackground();
+function warpStarfield(){}
+function rotateDeepSpace(){}
+// Stage3：星座
+// Stage2 → Stage3 过渡用 3D 影子星座
+let shadowConstellation = null;
+
+function buildConstellation3D(poly){
+  // 计算多边形的包围盒与中心
+  let minX =  99999, minY =  99999;
+  let maxX = -99999, maxY = -99999;
+  for (let p of poly){
+    minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+    minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+  }
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  const size = Math.max(maxX - minX, maxY - minY) || 1;
+
+  // 稍微放大一点，让 Stage3 里星座不要太小
+  const scale = 480 / size;
+
+  // 按中心与缩放换算为 3D 空间坐标，Z 做轻微随机抖动
+  const pts = poly.map(p => new THREE.Vector3(
+    (p.x - cx) * scale,
+    -(p.y - cy) * scale,
+    (Math.random() * 120 - 60)
+  ));
+
+  const group = new THREE.Group();
+
+  // 顶点（星星）
+  const pos = [];
+  pts.forEach(p => pos.push(p.x, p.y, p.z));
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  const m = new THREE.PointsMaterial({
+    size: 18,
+    color: 0xffffff,
+    transparent: true,
+    opacity: 1,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  const points = new THREE.Points(g, m);
+  group.add(points);
+
+  // 连接线：使用与stage1相同的连线算法
+  // 先将3D点转换为2D点用于计算连线（忽略Z坐标）
+  const pts2D = pts.map(p => ({x: p.x, y: p.y}));
+  const chosen = computeConstellationEdges(pts2D, size * scale * 0.12);
+  
+  const lpos = [];
+  for(const e of chosen){
+    const a = pts[e.i];
+    const b = pts[e.j];
+    lpos.push(a.x, a.y, a.z, b.x, b.y, b.z);
+  }
+  
+  const gl = new THREE.BufferGeometry();
+  gl.setAttribute("position", new THREE.Float32BufferAttribute(lpos, 3));
+  const ml = new THREE.LineBasicMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.9
+  });
+  const lines = new THREE.LineSegments(gl, ml);
+  group.add(lines);
+
+  // 比之前稍微靠近一些，让最新作品更"靠前"
+  group.position.z = -1400;
+  group.userData.baseZ = group.position.z;
+  group.userData.baseScale = 1.0;
+  return group;
+}
+
+// Stage2 开始时准备一个“隐藏”的 3D 影子星座
+function prepareShadowConstellationForStage2(){
+  if(!savedPolygonGlobal || !savedPolygonGlobal.length) return;
+
+  // 先清理旧的影子星座
+  if(shadowConstellation){
+    scene.remove(shadowConstellation);
+    shadowConstellation.traverse(obj => {
+      if(obj.geometry) obj.geometry.dispose();
+      if(obj.material){
+        if(Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+        else if(obj.material.dispose) obj.material.dispose();
+      }
+    });
+    shadowConstellation = null;
+  }
+
+  // 用当前保存的多边形生成 3D 星座
+  shadowConstellation = buildConstellation3D(savedPolygonGlobal);
+  shadowConstellation.visible = false; // 只在 Warp 中显示
+  shadowConstellation.userData.isShadowConstellation = true;
+  scene.add(shadowConstellation);
+}
+//   手势摄像机
+let camTargetX = 0;
+let camTargetY = 0;
+let camTargetZ = 1200;
+const SINGLE_HAND_STATE = {
+  filteredX: null, prevFilteredX: null,
+  filteredY: null, prevFilteredY: null,
+  direction: 0, directionY: 0,
+  oppositeFrames: 0, oppositeFramesY: 0,
+  idleFrames: 0, idleFramesY: 0
+};
+const RIGHT_BOUNDARY = {
+  threshold: 3500, hardLimit: 3800, resistanceStart: 3500, resistanceEnd: 3800,
+  isAtBoundary: false, bounceTarget: 3750, bounceStartTime: 0, isBouncing: false
+};
+const TOP_BOUNDARY = {
+  threshold: -1800, hardLimit: -2200, resistanceStart: -1800, resistanceEnd: -2200,
+  isAtBoundary: false, isBouncing: false, bounceTarget: -2000, bounceStartTime: 0
+};
+const BOTTOM_BOUNDARY = {
+  threshold: 1800, hardLimit: 2200, resistanceStart: 1800, resistanceEnd: 2200,
+  isAtBoundary: false, isBouncing: false, bounceTarget: 2000, bounceStartTime: 0
+};
+// 状态变量定义在外面 (保持不变)
+let isHandOpenState = false;
+
+function controlCameraByHands(h){
+  // 1. 非 Stage 3 或无手数据时重置状态
+  if(stage !== 3){
+    controlCameraByHands.lastDist = undefined;
+    controlCameraByHands.zoomSpeed = 0;
+    SINGLE_HAND_STATE.filteredX = null;
+    SINGLE_HAND_STATE.prevFilteredX = null;
+    SINGLE_HAND_STATE.filteredY = null;
+    SINGLE_HAND_STATE.prevFilteredY = null;
+    SINGLE_HAND_STATE.direction = 0;
+    SINGLE_HAND_STATE.directionY = 0;
+    return;
+  }
+  
+  // 如果没有检测到手，彻底重置状态
+  if(!h || h.length === 0){
+    controlCameraByHands.lastDist = undefined;
+    controlCameraByHands.zoomSpeed = 0;
+    SINGLE_HAND_STATE.filteredX = null; // 关键：手消失时清除记忆
+    SINGLE_HAND_STATE.prevFilteredX = null;
+    SINGLE_HAND_STATE.filteredY = null;
+    SINGLE_HAND_STATE.prevFilteredY = null;
+    SINGLE_HAND_STATE.direction = 0;
+    SINGLE_HAND_STATE.directionY = 0;
+    return;
+  }
+
+  updateActivityTime();
+  const ids = [0,5,9,13,17];
+
+    // 单手控制：左右和上下滑动
+    if(h.length === 1){
+    controlCameraByHands.lastDist = undefined;
+    controlCameraByHands.zoomSpeed = 0;
+
+    // 计算手掌中心 X 和 Y (归一化 0.0 ~ 1.0)
+    const palmX = (h[0][0].x + h[0][5].x + h[0][9].x + h[0][13].x + h[0][17].x) / 5;
+    const palmY = (h[0][0].y + h[0][5].y + h[0][9].y + h[0][13].y + h[0][17].y) / 5;
+    const state = SINGLE_HAND_STATE;
+
+    // --- 1. 初始进入判定 ---
+    // 如果之前没有记录位置，说明手刚进入画面，直接同步位置，不移动
+    if(state.filteredX === null || state.filteredY === null){
+      state.filteredX = palmX;
+      state.prevFilteredX = palmX;
+      state.filteredY = palmY;
+      state.prevFilteredY = palmY;
+      state.direction = 0;
+      state.directionY = 0;
+      state.oppositeFrames = 0;
+      state.oppositeFramesY = 0;
+      state.idleFrames = 0;
+      state.idleFramesY = 0;
+      return;
+    }
+
+    // --- 2. [New] 防跳跃保护 (Teleport Guard) ---
+    // 如果当前位置与上一帧位置相差超过 0.08 (屏幕宽度的8%)
+    // 我们认为这不是人类能做出的正常滑动速度，而是手位置的突变（换地方升起）
+    // 此时强制重置锚点，防止画面跳跃
+    const jumpDistX = Math.abs(palmX - state.filteredX);
+    const jumpDistY = Math.abs(palmY - state.filteredY);
+    if (jumpDistX > 0.08 || jumpDistY > 0.08) {
+        state.filteredX = palmX;
+        state.prevFilteredX = palmX;
+        state.filteredY = palmY;
+        state.prevFilteredY = palmY;
+        return;
+    }
+
+    // --- 3. 手指伸展度判定 (你之前的逻辑) ---
+    const hand = h[0];
+    const wrist = hand[0];
+    const fingerTips = [8, 12, 16];
+    const fingerMCPs = [5, 9, 13];
+    
+    let extendedCount = 0;
+    for(let i=0; i<fingerTips.length; i++){
+        const tip = hand[fingerTips[i]];
+        const mcp = hand[fingerMCPs[i]];
+        const distTip = Math.hypot(tip.x - wrist.x, tip.y - wrist.y);
+        const distMCP = Math.hypot(mcp.x - wrist.x, mcp.y - wrist.y);
+        if(distTip > distMCP * 1.5) {
+            extendedCount++;
+        }
+    }
+
+    // 迟滞阈值
+    if (extendedCount >= 3) {
+        isHandOpenState = true;
+    } else if (extendedCount <= 1) {
+        isHandOpenState = false;
+    }
+
+    // --- 4. 平滑与移动计算 ---
+    const SMOOTH = 0.28;
+    // 平滑位置（X和Y）
+    state.filteredX = THREE.MathUtils.lerp(state.filteredX, palmX, SMOOTH);
+    state.filteredY = THREE.MathUtils.lerp(state.filteredY, palmY, SMOOTH);
+    
+    // 计算位移量（X和Y）
+    const deltaX = state.filteredX - state.prevFilteredX;
+    const deltaY = state.filteredY - state.prevFilteredY;
+    
+    // 关键：始终更新基准点，确保无论手张开还是闭合，系统都在跟踪
+    state.prevFilteredX = state.filteredX;
+    state.prevFilteredY = state.filteredY;
+
+    // 只有手张开时才移动相机
+    if (isHandOpenState) {
+        document.body.style.cursor = "move";
+        
+        const DEADZONE = 0.002; // 稍微调小了一点死区让手感更灵敏
+        const hasMovementX = Math.abs(deltaX) >= DEADZONE;
+        const hasMovementY = Math.abs(deltaY) >= DEADZONE;
+        
+        // X轴移动处理
+        if(hasMovementX){
+            state.idleFrames = 0;
+        const RELATIVE_SENSITIVITY = 9200;
+            const dir = deltaX > 0 ? 1 : -1;
+
+        // 方向防抖
+        const OPPOSITE_HOLD_FRAMES = 6;
+        if(state.direction === 0){
+            state.direction = dir;
+            state.oppositeFrames = 0;
+        }else if(dir !== state.direction){
+            state.oppositeFrames++;
+                if(state.oppositeFrames < OPPOSITE_HOLD_FRAMES) {
+                    // 等待防抖，但不阻止Y轴移动
+                } else {
+            state.direction = dir;
+            state.oppositeFrames = 0;
+                }
+        }else{
+            state.oppositeFrames = 0;
+        }
+
+            if(!RIGHT_BOUNDARY.isBouncing){
+                // 应用X轴移动
+                let moveAmountX = deltaX * RELATIVE_SENSITIVITY;
+        // 阻力计算
+                if(deltaX > 0 && camTargetX >= RIGHT_BOUNDARY.resistanceStart){
+            const progress = (camTargetX - RIGHT_BOUNDARY.resistanceStart) / (RIGHT_BOUNDARY.resistanceEnd - RIGHT_BOUNDARY.resistanceStart);
+            const resistance = Math.min(1, progress);
+            const resistanceFactor = 1 - Math.pow(resistance, 1.5) * 0.95;
+                    moveAmountX *= resistanceFactor;
+        }
+
+                const newTargetX = camTargetX + moveAmountX;
+        
+                // X轴边界处理
+        if(newTargetX >= RIGHT_BOUNDARY.hardLimit){
+             if(!RIGHT_BOUNDARY.isAtBoundary){
+                RIGHT_BOUNDARY.isAtBoundary = true;
+                RIGHT_BOUNDARY.isBouncing = true;
+                RIGHT_BOUNDARY.bounceStartTime = performance.now();
+             }
+             if(!RIGHT_BOUNDARY.isBouncing) camTargetX = RIGHT_BOUNDARY.hardLimit;
+        } else {
+             camTargetX = Math.max(-3800, Math.min(3800, newTargetX));
+             if(camTargetX < RIGHT_BOUNDARY.resistanceStart){
+                RIGHT_BOUNDARY.isAtBoundary = false;
+                RIGHT_BOUNDARY.isBouncing = false;
+                     }
+                }
+            }
+        } else {
+            state.idleFrames++;
+            if(state.idleFrames > 12) state.direction = 0;
+        }
+        
+        // Y轴移动处理
+        if(hasMovementY){
+            state.idleFramesY = 0;
+            const RELATIVE_SENSITIVITY_Y = 9200; // 与X轴相同的灵敏度
+            const dirY = deltaY > 0 ? 1 : -1;
+
+            // Y轴方向防抖
+            const OPPOSITE_HOLD_FRAMES = 6;
+            if(state.directionY === 0){
+                state.directionY = dirY;
+                state.oppositeFramesY = 0;
+            }else if(dirY !== state.directionY){
+                state.oppositeFramesY++;
+                if(state.oppositeFramesY < OPPOSITE_HOLD_FRAMES) {
+                    // 等待防抖
+                } else {
+                    state.directionY = dirY;
+                    state.oppositeFramesY = 0;
+                }
+            }else{
+                state.oppositeFramesY = 0;
+            }
+
+            if(!TOP_BOUNDARY.isBouncing && !BOTTOM_BOUNDARY.isBouncing){
+                // 应用Y轴移动
+                let moveAmountY = deltaY * RELATIVE_SENSITIVITY_Y;
+                
+                // 上边界阻力计算
+                if(deltaY < 0 && camTargetY <= TOP_BOUNDARY.resistanceStart){
+                    const progress = (TOP_BOUNDARY.resistanceStart - camTargetY) / (TOP_BOUNDARY.resistanceStart - TOP_BOUNDARY.resistanceEnd);
+                    const resistance = Math.min(1, progress);
+                    const resistanceFactor = 1 - Math.pow(resistance, 1.5) * 0.95;
+                    moveAmountY *= resistanceFactor;
+                }
+                
+                // 下边界阻力计算
+                if(deltaY > 0 && camTargetY >= BOTTOM_BOUNDARY.resistanceStart){
+                    const progress = (camTargetY - BOTTOM_BOUNDARY.resistanceStart) / (BOTTOM_BOUNDARY.resistanceEnd - BOTTOM_BOUNDARY.resistanceStart);
+                    const resistance = Math.min(1, progress);
+                    const resistanceFactor = 1 - Math.pow(resistance, 1.5) * 0.95;
+                    moveAmountY *= resistanceFactor;
+                }
+
+                const newTargetY = camTargetY + moveAmountY;
+                
+                // Y轴边界处理
+                if(newTargetY <= TOP_BOUNDARY.hardLimit){
+                    if(!TOP_BOUNDARY.isAtBoundary){
+                        TOP_BOUNDARY.isAtBoundary = true;
+                        TOP_BOUNDARY.isBouncing = true;
+                        TOP_BOUNDARY.bounceStartTime = performance.now();
+                    }
+                    if(!TOP_BOUNDARY.isBouncing) camTargetY = TOP_BOUNDARY.hardLimit;
+                } else if(newTargetY >= BOTTOM_BOUNDARY.hardLimit){
+                    if(!BOTTOM_BOUNDARY.isAtBoundary){
+                        BOTTOM_BOUNDARY.isAtBoundary = true;
+                        BOTTOM_BOUNDARY.isBouncing = true;
+                        BOTTOM_BOUNDARY.bounceStartTime = performance.now();
+                    }
+                    if(!BOTTOM_BOUNDARY.isBouncing) camTargetY = BOTTOM_BOUNDARY.hardLimit;
+                } else {
+                    camTargetY = Math.max(TOP_BOUNDARY.hardLimit, Math.min(BOTTOM_BOUNDARY.hardLimit, newTargetY));
+                    if(camTargetY > TOP_BOUNDARY.resistanceStart){
+                        TOP_BOUNDARY.isAtBoundary = false;
+                        TOP_BOUNDARY.isBouncing = false;
+                    }
+                    if(camTargetY < BOTTOM_BOUNDARY.resistanceStart){
+                        BOTTOM_BOUNDARY.isAtBoundary = false;
+                        BOTTOM_BOUNDARY.isBouncing = false;
+                    }
+                }
+            }
+        } else {
+            state.idleFramesY++;
+            if(state.idleFramesY > 12) state.directionY = 0;
+        }
+    } else {
+        document.body.style.cursor = "default";
+    }
+    return;
+  }
+
+    // 双手控制：缩放 (Zoom) - 保持不变
+    function center(hand){
+    let x=0, y=0;
+    for(let id of ids){ x += hand[id].x; y += hand[id].y; }
+    return {x:x/ids.length, y:y/ids.length};
+  }
+  let c1 = center(h[0]), c2 = center(h[1]);
+  let distNow = Math.hypot(c1.x - c2.x, c1.y - c2.y);
+  if(controlCameraByHands.lastDist === undefined){
+    controlCameraByHands.lastDist = distNow;
+    return;
+  }
+  let dDist = distNow - controlCameraByHands.lastDist;
+  const DISTANCE_TOLERANCE = 0.005;
+  if (Math.abs(dDist) < DISTANCE_TOLERANCE){
+    controlCameraByHands.zoomSpeed = 0;
+    controlCameraByHands.lastDist = distNow;
+    return;
+  }
+  updateActivityTime();
+  let speed = dDist * 6000;
+  camTargetZ -= speed;
+  camTargetZ = THREE.MathUtils.clamp(camTargetZ, -30000, 5200);
+  controlCameraByHands.zoomSpeed = speed;
+  controlCameraByHands.lastDist = distNow;
+}
+function updateCamera(){
+  // Stage3的右边界弹跳处理
+  if(RIGHT_BOUNDARY.isBouncing && stage === 3){
+    const now = performance.now();
+    const bounceElapsed = now - RIGHT_BOUNDARY.bounceStartTime;
+    const bounceDuration = 400;
+    if(bounceElapsed < bounceDuration){
+      const t = bounceElapsed / bounceDuration;
+      const ease = 1 - Math.pow(1 - t, 3);
+      camTargetX = THREE.MathUtils.lerp(RIGHT_BOUNDARY.hardLimit, RIGHT_BOUNDARY.bounceTarget, ease);
+    } else {
+      RIGHT_BOUNDARY.isBouncing = false;
+      camTargetX = RIGHT_BOUNDARY.bounceTarget;
+    }
+  }
+  
+  // Stage3的上边界弹跳处理
+  if(TOP_BOUNDARY.isBouncing && stage === 3){
+    const now = performance.now();
+    const bounceElapsed = now - TOP_BOUNDARY.bounceStartTime;
+    const bounceDuration = 400;
+    if(bounceElapsed < bounceDuration){
+      const t = bounceElapsed / bounceDuration;
+      const ease = 1 - Math.pow(1 - t, 3);
+      camTargetY = THREE.MathUtils.lerp(TOP_BOUNDARY.hardLimit, TOP_BOUNDARY.bounceTarget, ease);
+    } else {
+      TOP_BOUNDARY.isBouncing = false;
+      camTargetY = TOP_BOUNDARY.bounceTarget;
+    }
+  }
+  
+  // Stage3的下边界弹跳处理
+  if(BOTTOM_BOUNDARY.isBouncing && stage === 3){
+    const now = performance.now();
+    const bounceElapsed = now - BOTTOM_BOUNDARY.bounceStartTime;
+    const bounceDuration = 400;
+    if(bounceElapsed < bounceDuration){
+      const t = bounceElapsed / bounceDuration;
+      const ease = 1 - Math.pow(1 - t, 3);
+      camTargetY = THREE.MathUtils.lerp(BOTTOM_BOUNDARY.hardLimit, BOTTOM_BOUNDARY.bounceTarget, ease);
+    } else {
+      BOTTOM_BOUNDARY.isBouncing = false;
+      camTargetY = BOTTOM_BOUNDARY.bounceTarget;
+    }
+  }
+  
+  // 标题界面的相机位置更新（在updateTitleBackground中处理）
+  if(stage === 0){
+    // 相机位置已在updateTitleBackground中更新
+    // 更新提示显示（仅在标题界面显示）
+    const instructionText = document.getElementById("instructionText");
+    if(instructionText){
+      if(!warpTextState.isActive){
+        instructionText.style.display = "block";
+        instructionText.style.opacity = "0.85";
+      } else {
+        instructionText.style.display = "none";
+      }
+    }
+  } else {
+    // Stage3的相机位置更新
+    camera.position.x = THREE.MathUtils.lerp(camera.position.x, camTargetX, 0.12);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y, camTargetY, 0.12);
+    camera.position.z = THREE.MathUtils.lerp(camera.position.z, camTargetZ, 0.06);
+
+    if(stage === 3){
+      const boundaryHint = document.getElementById("stage3BoundaryHint");
+      if(boundaryHint){
+        boundaryHint.style.display = "none";
+      }
+    }
+  }
+}
+
+// 画廊与保存逻辑
+const creations = [];
+function saveCreationsToStorage(){
+  try{
+    const toSave = creations.map(c=>({
+      id: c.id, dateStr: c.dateStr, thumb: c.thumb,
+      poly: c.poly, strokePolylines: normalizeStrokePolylines(c.strokePolylines || c.strokePoints)
+    }));
+    localStorage.setItem('constellations', JSON.stringify(toSave));
+  }catch(e){}
+}
+function loadCreationsFromStorage(){
+  try{
+    const raw = localStorage.getItem('constellations');
+    if(!raw) return;
+    const arr = JSON.parse(raw);
+    if(!Array.isArray(arr)) return;
+    const inner = document.getElementById("galleryInner");
+    inner.innerHTML = "";
+    for(let r of arr){
+      const rec = {
+        id: r.id, dateStr: r.dateStr, thumb: r.thumb,
+        poly: r.poly || [], strokePolylines: normalizeStrokePolylines(r.strokePolylines || r.strokePoints)
+      };
+      creations.push(rec);
+      addGalleryTile(rec);
+    }
+    layoutCreationsInScene();
+  }catch(e){}
+}
+function captureThumbnail(width = 600, height = 360){
+  const srcCanvas = renderer.domElement;
+  const tmp = document.createElement("canvas");
+  tmp.width = width; tmp.height = height;
+  const tctx = tmp.getContext("2d");
+  // 先画 3D 星空，再叠加 2D 画布（艺术层和 UI 层，即使被隐藏，内容依然存在）
+  tctx.drawImage(srcCanvas, 0, 0, width, height);
+  tctx.drawImage(artCanvas, 0, 0, width, height);
+  tctx.drawImage(uiCanvas, 0, 0, width, height);
+  return tmp.toDataURL("image/jpeg", 0.85);
+}
+function layoutCreationsInScene(){
+  if(creations.length === 0) return;
+  const latest = creations[creations.length-1];
+  creations.forEach((c, idx) => {
+    if(!c.group) return;
+    if(c === latest){
+      c.group.position.x = 0; c.group.position.y = 0; c.group.position.z = -1800;
+    }else{
+      c.group.position.x = (Math.random()-0.5) * 6800;
+      c.group.position.y = (Math.random()-0.5) * 2400;
+      c.group.position.z = -1600 + Math.random() * -800;
+    }
+  });
+}
+function addCreationToScene(rec){
+  const grp = buildConstellation3D(rec.poly);
+  const strokeSets = normalizeStrokePolylines(rec.strokePolylines || rec.strokePoints);
+  rec.strokePolylines = strokeSets;
+  if(strokeSets.length){
+    const strokeGroup = new THREE.Group();
+    for(let path of strokeSets){
+      if(path.length < 2) continue;
+      const positions = [];
+      for(let p of path){
+        positions.push((p.x - W/2) * 0.6, -(p.y - H/2) * 0.6, -20);
+      }
+      const geom = new THREE.BufferGeometry();
+      geom.setAttribute("position", new THREE.Float32BufferAttribute(positions,3));
+      const mat = new THREE.LineBasicMaterial({ color: 0xffe6cc, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending });
+      const line = new THREE.Line(geom, mat);
+      line.position.z = 0;
+      strokeGroup.add(line);
+    }
+    if(strokeGroup.children.length){
+      grp.add(strokeGroup);
+      grp.userData.strokeLine = strokeGroup;
+    }
+  }
+  grp.userData.isUserCreation = true;
+  grp.userData.creationId = rec.id;
+  scene.add(grp);
+  rec.group = grp;
+}
+function addGalleryTile(rec){
+  const inner = document.getElementById("galleryInner");
+  const tile = document.createElement("div");
+  tile.className = "galleryTile";
+  tile.innerHTML = `<img src="${rec.thumb}" /><div class="galleryMeta">${rec.dateStr}</div><button class="galleryDel">削除</button>`;
+  inner.appendChild(tile);
+  const delBtn = tile.querySelector(".galleryDel");
+  delBtn.addEventListener("click", ()=>{
+    if(!confirm("この作品を削除しますか？")) return;
+    if(rec.group){
+      scene.remove(rec.group);
+      rec.group.traverse(obj=>{
+        if(obj.geometry) obj.geometry.dispose();
+        if(obj.material) { if(Array.isArray(obj.material)) obj.material.forEach(m=>m.dispose()); else obj.material.dispose(); }
+      });
+    }
+    const idx = creations.findIndex(c=>c.id === rec.id);
+    if(idx>=0) creations.splice(idx,1);
+    tile.remove();
+    layoutCreationsInScene();
+    saveCreationsToStorage();
+  });
+}
+document.getElementById("galleryBtn").addEventListener("click", ()=>{ document.getElementById("galleryOverlay").style.display = "block"; });
+document.querySelector("#galleryOverlay .closeBtn").addEventListener("click", ()=>{ document.getElementById("galleryOverlay").style.display = "none"; });
+loadCreationsFromStorage();
+
+// 标题手势 & Title Warp
+//   穿越文字显示函数
+let lastWarpTextUpdate = 0;
+function checkWarpTextTrigger() {
+  if(stage !== 0) return;
+  
+  const z = titleCameraZ;
+  const [minZ, maxZ] = warpTextState.triggerZRange;
+  
+  // 检测是否在触发范围内
+  if (z >= minZ && z <= maxZ && !warpTextState.isActive) {
+    startWarpTextSequence();
+  }
+  
+  // 如果文字显示已激活，继续更新
+  if (warpTextState.isActive) {
+    const now = performance.now();
+    if (now - lastWarpTextUpdate >= 16) {
+      updateWarpText();
+      lastWarpTextUpdate = now;
+    }
+  }
+}
+
+function startWarpTextSequence() {
+  warpTextState.isActive = true;
+  warpTextState.currentLineIndex = 0;
+  warpTextState.currentCharIndex = 0;
+  warpTextState.lastUpdateTime = performance.now();
+  warpTextState.autoMoving = true;
+  
+  // 显示遮罩
+  const overlay = document.getElementById('warpOverlay');
+  const container = document.getElementById('warpTextContainer');
+  if (overlay) {
+    overlay.style.display = 'block';
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.style.opacity = '1';
+    }, 10);
+  }
+  if (container) container.style.display = 'block';
+  
+  // 隐藏标题
+  const titleContainer = document.getElementById('titleOverlay');
+  if (titleContainer) {
+    titleContainer.style.transition = 'opacity 1.5s ease-out';
+    titleContainer.style.opacity = '0';
+  }
+  
+  // 隐藏提示文字
+  const instructionText = document.getElementById('instructionText');
+  if (instructionText) {
+    instructionText.style.transition = 'opacity 1.5s ease-out';
+    instructionText.style.opacity = '0';
+  }
+}
+
+function updateWarpText() {
+  if (!warpTextState.isActive || stage !== 0) return;
+  
+  const now = performance.now();
+  const { currentLineIndex, currentCharIndex, charInterval, lineInterval } = warpTextState;
+  
+  if (currentLineIndex >= WARP_TEXT_MESSAGES.length) {
+    // 所有文字显示完成，进入stage1
+    setTimeout(() => {
+      enterStage1FromTitle();
+    }, 2000); // 等待2秒后进入stage1
+    return;
+  }
+  
+  const currentLine = WARP_TEXT_MESSAGES[currentLineIndex];
+  
+  // 检查是否需要显示下一个字符
+  if (currentCharIndex < currentLine.length) {
+    if (now - warpTextState.lastUpdateTime >= charInterval) {
+      displayWarpTextChar(currentLineIndex, currentCharIndex + 1);
+      warpTextState.currentCharIndex++;
+      warpTextState.lastUpdateTime = now;
+    }
+  } else {
+    // 当前行显示完成，等待后显示下一行
+    if (now - warpTextState.lastUpdateTime >= lineInterval) {
+      fadeUpCurrentLine(currentLineIndex);
+      
+      // 准备下一行
+      warpTextState.currentLineIndex++;
+      warpTextState.currentCharIndex = 0;
+      warpTextState.lastUpdateTime = now;
+    }
+  }
+}
+
+function displayWarpTextChar(lineIndex, charCount) {
+  const container = document.getElementById('warpTextContainer');
+  if (!container) return;
+  
+  const currentLine = WARP_TEXT_MESSAGES[lineIndex];
+  const textToShow = currentLine.substring(0, charCount);
+  
+  // 移除旧的该行元素
+  const oldLine = container.querySelector(`.warpTextLine[data-line="${lineIndex}"]`);
+  if (oldLine) oldLine.remove();
+  
+  // 创建新的行元素
+  const lineEl = document.createElement('div');
+  lineEl.className = 'warpTextLine';
+  lineEl.setAttribute('data-line', lineIndex);
+  lineEl.textContent = textToShow;
+  lineEl.style.transform = 'translateX(-50%)';
+  lineEl.dataset.translateY = '0';
+  container.appendChild(lineEl);
+}
+
+function fadeUpCurrentLine(lineIndex) {
+  const container = document.getElementById('warpTextContainer');
+  if (!container) return;
+  
+  const LINE_SPACING = 60;
+  const upShiftDistance = -LINE_SPACING;
+  
+  const lineEl = container.querySelector(`.warpTextLine[data-line="${lineIndex}"]`);
+  if (lineEl && !lineEl.classList.contains('fadeUp')) {
+    lineEl.classList.add('fadeUp');
+    const currentY = parseFloat(lineEl.dataset.translateY || '0');
+    const newY = currentY + upShiftDistance;
+    lineEl.style.transform = `translateX(-50%) translateY(${newY}px)`;
+    lineEl.dataset.translateY = newY;
+  }
+  
+  // 所有已经上移的行都要再上移一行
+  const allLines = container.querySelectorAll('.warpTextLine.fadeUp');
+  allLines.forEach((line) => {
+    const idx = parseInt(line.getAttribute('data-line'));
+    if (idx < lineIndex) {
+      const currentY = parseFloat(line.dataset.translateY || '0');
+      const newY = currentY + upShiftDistance;
+      line.style.transform = `translateX(-50%) translateY(${newY}px)`;
+      line.dataset.translateY = newY;
+    }
+  });
+}
+
+function enterStage1FromTitle() {
+  // 重置穿越文字状态
+  warpTextState.isActive = false;
+  warpTextState.autoMoving = false;
+  
+  // 隐藏遮罩和文字容器
+  const overlay = document.getElementById('warpOverlay');
+  const container = document.getElementById('warpTextContainer');
+  if (overlay) {
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.style.display = 'none';
+    }, 1500);
+  }
+  if (container) {
+    container.innerHTML = '';
+    container.style.display = 'none';
+  }
+  
+  // 隐藏标题覆盖层
+  const titleOverlay = document.getElementById('titleOverlay');
+  if (titleOverlay) {
+    titleOverlay.style.display = 'none';
+  }
+  
+  // 进入stage1
+  stage = 1;
+  stage1StartTime = 0;
+  stage1Opacity = 0;
+  stage1AppearStart = performance.now();
+  stage1AppearDuration = 1000;
+  lastSecondPolygon = null;
+  latestValidPolygon = null;
+  
+  // 重置标语序列状态
+  stage1TipSequenceState = "waiting";
+  stage1GestureDetectionStartTime = 0;
+  if(stage1TipSequenceTimer) {
+    clearTimeout(stage1TipSequenceTimer);
+    stage1TipSequenceTimer = null;
+  }
+  
+  // 重置相机位置
+  camera.position.set(0, 0, 1200);
+  camTargetX = 0;
+  camTargetY = 0;
+  camTargetZ = 1200;
+  
+  // 显示视频背景
+  const videoElement = document.getElementById("videoElement");
+  if(videoElement) {
+    videoElement.classList.add("stage1Visible");
+  }
+  
+  // 显示画布
+  artCanvas.style.display = "block";
+  uiCanvas.style.display = "block";
+  
+  // 隐藏提示文字（进入stage1时不应显示）
+  const instructionText = document.getElementById("instructionText");
+  if(instructionText) {
+    instructionText.style.display = "none";
+  }
+  
+  // 开始显示标语序列
+  showStage1TipSequence();
+  
+  updateActivityTime();
+}
+
+//   标题手势检测
+function detectTitleHands() {
+  if(stage !== 0) return;
+  if(!handsData || handsData.length === 0) {
+    targetTitleWarpSpeed = 0;
+    return;
+  }
+  
+  // 单手控制：手掌张开/握拳控制穿越速度
+  if(handsData.length === 1) {
+    const hand = handsData[0];
+    
+    // 检测手掌是否张开
+    const wrist = hand[0];
+    const palmCenter = hand[9];
+    const dx = wrist.x - palmCenter.x;
+    const dy = wrist.y - palmCenter.y;
+    const handSize = Math.sqrt(dx * dx + dy * dy);
+    
+    const getDist = (p1, p2) => {
+      const dx = p1.x - p2.x;
+      const dy = p1.y - p2.y;
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+    
+    // 检测手指是否张开
+    let openCount = 0;
+    const longFingers = [8, 12, 16];
+    longFingers.forEach(tipIdx => {
+      if (getDist(hand[tipIdx], wrist) > handSize * 1.6) {
+        openCount++;
+      }
+    });
+    if (getDist(hand[20], wrist) > handSize * 1.4) {
+      openCount++;
+    }
+    if (getDist(hand[4], hand[17]) > handSize * 1.2) {
+      openCount++;
+    }
+    const handOpen = openCount >= 4;
+    
+    // 检测是否握拳
+    const threshold = handSize * 0.55;
+    const tips = [8, 12, 16, 20];
+    let closedCount = 0;
+    tips.forEach(tipIdx => {
+      if (getDist(hand[tipIdx], palmCenter) < threshold) {
+        closedCount++;
+      }
+    });
+    if (getDist(hand[4], palmCenter) < threshold * 1.5) {
+      closedCount++;
+    }
+    const handClosed = closedCount >= 5;
+    
+    if (handOpen) {
+      // 手掌张开：向前穿越
+      targetTitleWarpSpeed = -0.4;
+      titleHandWasOpen = true;
+    } else if (handClosed) {
+      // 握拳：后退
+      targetTitleWarpSpeed = 0.25;
+      titleHandWasFist = true;
+    } else {
+      // 手势不明确时，停止穿越
+      targetTitleWarpSpeed = 0;
+    }
+  } else {
+    targetTitleWarpSpeed = 0;
+  }
+}
+
+function fadeOverlayToBlack(callback){
+  const overlay = document.getElementById("fadeOverlay");
+  if(!overlay){ if(callback) callback(); return; }
+  overlay.style.display = "block";
+  requestAnimationFrame(()=>overlay.classList.add("visible"));
+  setTimeout(()=>{ if(callback) callback(); }, FADE_DURATION);
+}
+function fadeOverlayToTransparent(callback){
+  const overlay = document.getElementById("fadeOverlay");
+  if(!overlay){ if(callback) callback(); return; }
+  overlay.classList.remove("visible");
+  setTimeout(()=>{ overlay.style.display = "none"; if(callback) callback(); }, FADE_DURATION);
+}
+// 显示进入 stage1 时的标语序列
+function showStage1TipSequence(){
+  const tip = document.getElementById("tipOverlay");
+  const tipText = document.getElementById("tipText");
+  
+  if(!tip || !tipText) {
+    // 如果元素不存在，直接完成标语序列
+    stage1TipSequenceState = "completed";
+    return;
+  }
+  
+  // 清除之前的定时器
+  if(stage1TipSequenceTimer) {
+    clearTimeout(stage1TipSequenceTimer);
+    stage1TipSequenceTimer = null;
+  }
+  
+  // 隐藏新动画，显示tipText
+  const clockwork = document.getElementById("mysticClockwork");
+  if(clockwork) clockwork.style.display = "none";
+  tipText.style.display = "block";
+  
+  // 显示标语1
+  stage1TipSequenceState = "showingTip1";
+  tipText.innerHTML = "手をゆっくり前へ伸ばしてみてください。星たちが、あなたの指先へと集まってきます。";
+  tip.style.display = "flex";
+  requestAnimationFrame(() => {
+    tip.classList.add("visible");
+    // 3秒后显示标语2
+    stage1TipSequenceTimer = setTimeout(() => {
+      tip.classList.remove("visible");
+      stage1TipSequenceTimer = setTimeout(() => {
+        // 显示标语2，同时开始手势识别计时
+        stage1TipSequenceState = "showingTip2";
+        stage1GestureDetectionStartTime = performance.now(); // 从标语2出现时开始计时
+        tipText.innerHTML = "星たちが集まってきたね！<br>そのまま指先で、星座の輪郭をなぞってみましょう。";
+        tip.classList.add("visible");
+        // 3秒后隐藏标语2，但继续等待手势识别（如果还没到5秒）
+        stage1TipSequenceTimer = setTimeout(() => {
+          tip.classList.remove("visible");
+          stage1TipSequenceTimer = setTimeout(() => {
+            tip.style.display = "none";
+            // 如果还没到5秒，继续等待手势识别
+            if(stage1TipSequenceState === "showingTip2") {
+              stage1TipSequenceState = "waitingGesture";
+            }
+            stage1TipSequenceTimer = null;
+          }, TIP_FADE_DURATION);
+        }, STAGE1_TIP_DISPLAY_DURATION);
+      }, TIP_FADE_DURATION);
+    }, STAGE1_TIP_DISPLAY_DURATION);
+  });
+}
+
+// 检查手势识别并显示标语3
+function checkGestureAndShowTip3(){
+  // 从标语2显示时就开始检测（showingTip2 或 waitingGesture 状态）
+  if(stage1TipSequenceState !== "waitingGesture" && stage1TipSequenceState !== "showingTip2") {
+    return false;
+  }
+  
+  const elapsed = performance.now() - stage1GestureDetectionStartTime;
+  if(elapsed >= STAGE1_GESTURE_DETECTION_DURATION) {
+    // 5秒后显示标语3
+    const tip = document.getElementById("tipOverlay");
+    const tipText = document.getElementById("tipText");
+    
+    if(tip && tipText) {
+      // 隐藏新动画，显示tipText
+      const clockwork = document.getElementById("mysticClockwork");
+      if(clockwork) clockwork.style.display = "none";
+      tipText.style.display = "block";
+      
+      stage1TipSequenceState = "showingTip3";
+      tipText.innerHTML = "……いい感じですね！<br>それでは、次のステップに進みましょう。<br>これから 10 秒間、好きな形をつくってみてください。";
+      tip.style.display = "flex";
+      requestAnimationFrame(() => {
+        tip.classList.add("visible");
+        // 3秒后完成标语序列，开始倒计时
+        stage1TipSequenceTimer = setTimeout(() => {
+          tip.classList.remove("visible");
+          stage1TipSequenceTimer = setTimeout(() => {
+            tip.style.display = "none";
+            stage1TipSequenceState = "completed";
+            // 开始倒计时
+            if(stage1StartTime === 0) {
+              stage1StartTime = performance.now();
+            }
+            stage1TipSequenceTimer = null;
+          }, TIP_FADE_DURATION);
+        }, STAGE1_TIP_DISPLAY_DURATION);
+      });
+    } else {
+      stage1TipSequenceState = "completed";
+      if(stage1StartTime === 0) {
+        stage1StartTime = performance.now();
+      }
+    }
+    return true;
+  }
+  return false;
+}
+
+// 显示 stage1 到 stage1.5 的过渡标语
+let stage1To1_5TipTimer = null; // 用于存储定时器，以便清除
+function showStage1To1_5Tip(){
+  // 清除可能正在运行的定时器
+  if(stage1To1_5TipTimer){
+    clearTimeout(stage1To1_5TipTimer);
+    stage1To1_5TipTimer = null;
+  }
+  
+  // 安全定时器：防止过渡流程卡住
+  // 整个过渡流程：fadeIn(800ms) + showTip(2000ms) + fadeOut(600ms) + fadeToTransparent(800ms) ≈ 4.2秒
+  // 安全定时器设置为 5 秒
+  const safetyTimer = setTimeout(() => {
+    if(stage === "stage1To1_5") {
+      enterStage1_5();
+    }
+  }, 5000); // 5秒安全超时
+  
+  fadeOverlayToBlack(() => {
+    clearTimeout(safetyTimer);
+    
+    const tip = document.getElementById("tipOverlay");
+    const tipText = document.getElementById("tipText");
+    
+    if(!tip || !tipText) {
+      // 如果元素不存在，直接进入 stage1.5
+      enterStage1_5();
+      return;
+    }
+    
+    // 清除之前的内容和状态
+    tipText.innerHTML = "";
+    tip.classList.remove("visible");
+    
+    // 隐藏新动画，显示tipText
+    const clockwork = document.getElementById("mysticClockwork");
+    if(clockwork) clockwork.style.display = "none";
+    tipText.style.display = "block";
+    
+    // 设置新内容
+    tipText.innerHTML = "それでは、星空に描く練習に入りましょう！";
+    tip.style.display = "flex";
+    
+    // 立即淡出黑色遮罩，让标语可见
+    setTimeout(() => {
+      fadeOverlayToTransparent(() => {
+      });
+    }, 150);
+    
+    requestAnimationFrame(() => {
+      tip.classList.add("visible");
+      // 显示2秒后淡出并进入 stage1.5
+      stage1To1_5TipTimer = setTimeout(() => {
+        tip.classList.remove("visible");
+        stage1To1_5TipTimer = setTimeout(() => {
+          tip.style.display = "none";
+          tipText.innerHTML = ""; // 清除内容
+          enterStage1_5();
+          stage1To1_5TipTimer = null;
+        }, TIP_FADE_DURATION);
+      }, 2000); // 显示2秒
+    });
+  });
+}
+// 显示 stage2 到 stage3 的过渡标语
+let stage2To3TipTimer = null; // 用于存储定时器，以便清除
+
+// Create stars for the Mystic Astral Clockwork animation
+function createStars(layer, count, radius, size, delay, opacity) {
+  const container = document.getElementById(layer);
+  if (!container) return;
+  
+  for (let i = 0; i < count; i++) {
+    const star = document.createElement('div');
+    star.className = 'star-p';
+    
+    const angle = (360 / count) * i;
+    const rad = (angle * Math.PI) / 180;
+    const x = Math.cos(rad) * radius;
+    const y = Math.sin(rad) * radius;
+    
+    star.style.width = size + 'px';
+    star.style.height = size + 'px';
+    star.style.setProperty('--target-transform', `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`);
+    star.style.setProperty('--target-opacity', opacity);
+    star.style.animationDelay = (delay + i * 0.05) + 's';
+    
+    container.appendChild(star);
+  }
+}
+
+// Initialize all star layers
+function initStars() {
+  createStars('layer1', 8, 200, 4, 0.6, 0.8);
+  createStars('layer2', 12, 150, 3, 0.8, 0.7);
+  createStars('layer3', 16, 100, 2, 1.0, 0.6);
+}
+
+function showStage2To3Tip(){
+  // 清除可能正在运行的定时器
+  if(stage2To3TipTimer){
+    clearTimeout(stage2To3TipTimer);
+    stage2To3TipTimer = null;
+  }
+  
+  fadeOverlayToBlack(() => {
+    const tipOverlay = document.getElementById("tipOverlay");
+    const clockwork = document.getElementById("mysticClockwork");
+    const tipText = document.getElementById("tipText");
+    
+    if(!tipOverlay || !clockwork) return;
+
+    // Hide old tipText and show new animation
+    if(tipText) tipText.style.display = "none";
+    clockwork.style.display = "flex";
+    tipOverlay.style.display = "flex";
+    
+    // Reset SVG animation for replay
+    const svg = clockwork.querySelector('.s1-ring-svg');
+    if(svg) {
+      const newSvg = svg.cloneNode(true);
+      svg.parentNode.replaceChild(newSvg, svg);
+    }
+    
+    // Reset stars
+    const stars = document.querySelectorAll('.star-p');
+    stars.forEach(s => s.style.animationName = 'none');
+
+    requestAnimationFrame(() => {
+      tipOverlay.classList.add("visible");
+      
+      // Trigger animation
+      setTimeout(() => {
+        clockwork.classList.add("active");
+        stars.forEach(s => s.style.animationName = 'star-fade-in');
+      }, 100);
+
+      // Hide after 3 seconds
+      stage2To3TipTimer = setTimeout(() => {
+        tipOverlay.classList.remove("visible");
+        stage2To3TipTimer = setTimeout(() => {
+          tipOverlay.style.display = "none";
+          clockwork.classList.remove("active"); // Reset state
+          clockwork.style.display = "none"; // Hide animation
+          if(tipText) tipText.style.display = "block"; // Restore tipText for other functions
+          fadeOverlayToTransparent();
+          stage2To3TipTimer = null;
+        }, 600); // Wait for fade out
+      }, 3000);
+    });
+    setTimeout(() => fadeOverlayToTransparent(), 150);
+  });
+}
+
+// 显示 stage1.5 到 stage2 的过渡标语
+let stage1_5To2TipTimer = null; // 用于存储定时器，以便清除
+function showStage1_5To2Tip(){
+  // 清除可能正在运行的定时器
+  if(stage1_5To2TipTimer){
+    clearTimeout(stage1_5To2TipTimer);
+    stage1_5To2TipTimer = null;
+  }
+  
+  // 设置过渡状态，保持stage1的手势识别功能继续运行
+  stage = "stage1_5To2";
+  
+  // 隐藏提示和进度条
+  const progressHint = document.getElementById("stage1_5ProgressHint");
+  const progressBar = document.getElementById("stage1_5ProgressBar");
+  if(progressHint) {
+    progressHint.classList.remove("visible");
+    setTimeout(() => {
+      progressHint.style.display = "none";
+    }, 600);
+  }
+  if(progressBar) {
+    progressBar.classList.remove("visible");
+    setTimeout(() => {
+      progressBar.style.display = "none";
+    }, 600);
+    // 重置进度条 UI
+    const line = document.getElementById("p09-line");
+    if(line) line.style.width = "0%";
+    const dots = document.querySelectorAll(".p09-dot");
+    dots.forEach(d => d.classList.remove("active"));
+    const targetZone = document.getElementById("p09-target");
+    if(targetZone) targetZone.classList.remove("active");
+  }
+  
+  fadeOverlayToBlack(() => {
+    const tip = document.getElementById("tipOverlay");
+    const tipText = document.getElementById("tipText");
+    
+    if(!tip || !tipText) {
+      // 如果元素不存在，直接进入 stage2
+      enterStage2FromStage1_5();
+      return;
+    }
+    
+    // 清除之前的内容和状态
+    tipText.innerHTML = "";
+    tip.classList.remove("visible");
+    
+    // 隐藏新动画，显示tipText
+    const clockwork = document.getElementById("mysticClockwork");
+    if(clockwork) clockwork.style.display = "none";
+    tipText.style.display = "block";
+    
+    // 设置新内容
+    tipText.innerHTML = "……いい感じですね！それでは、本番へ！想像力を自由に広げて、あなたの星座が語る物語を絵で描き出してみましょう。";
+    tip.style.display = "flex";
+    requestAnimationFrame(() => {
+      tip.classList.add("visible");
+      // 显示2秒后淡出并完成 stage2 的初始化
+      stage1_5To2TipTimer = setTimeout(() => {
+        tip.classList.remove("visible");
+        stage1_5To2TipTimer = setTimeout(() => {
+          tip.style.display = "none";
+          tipText.innerHTML = ""; // 清除内容
+          fadeOverlayToTransparent(() => {
+            // 标语显示完成后，才真正进入stage2
+            enterStage2FromStage1_5();
+          });
+          stage1_5To2TipTimer = null;
+        }, TIP_FADE_DURATION);
+      }, 2000); // 显示2秒
+    });
+    setTimeout(() => fadeOverlayToTransparent(), 150);
+  });
+}
+
+// 从 stage1.5 进入 stage2（标语显示完成后调用）
+function enterStage2FromStage1_5(){
+  // 进入 stage2，设置背景
+  stage = 2;
+  // 清除 stage1.5 练习阶段的线条（清除所有相关 Canvas）
+  inkCtx.clearRect(0, 0, W, H);
+  artCtx.clearRect(0, 0, W, H);
+  uiCtx.clearRect(0, 0, W, H);
+  strokePolylines = [];
+  currentStrokePath = null;
+  penHist = [];
+  lastPen = null;
+  pinching = false;
+  artCanvasDirty = false; // 重置脏标记
+  
+  // 隐藏视频背景
+  const videoElement = document.getElementById("videoElement");
+  if(videoElement) {
+    videoElement.classList.remove("stage1Visible");
+  }
+  
+  // Stage2 一开始就准备 3D 影子星座
+  prepareShadowConstellationForStage2();
+  // 显示工具覆盖层
+  setToolOverlayVisible(true);
+  
+  // 立即绘制 stage2 的背景（星座），确保背景正确
+  if(savedPolygonGlobal) {
+    artCtx.clearRect(0, 0, W, H);
+    drawStage1Polyline(savedPolygonGlobal, artCtx);
+    artCanvasDirty = false;
+  }
+  
+  // 完成 stage2 的初始化（显示提示等）
+  finishStage2Initialization();
+}
+
+// 完成 stage2 的初始化（显示提示等）
+function finishStage2Initialization(){
+  // 显示 Stage2 提示
+  const stage2Hint = document.getElementById("stage2Hint");
+  if(stage2Hint) {
+    stage2Hint.style.display = "block";
+    requestAnimationFrame(() => {
+      stage2Hint.classList.add("visible");
+    });
+  }
+  const stage2TopHint = document.getElementById("stage2TopHint");
+  if(stage2TopHint) {
+    stage2TopHint.style.display = "block";
+    requestAnimationFrame(() => {
+      stage2TopHint.classList.add("visible");
+    });
+  }
+  
+  updateActivityTime();
+}
+
+
+// 在过渡状态时保持 stage1 的背景显示
+function doStage1To1_5Transition(){
+  // UI 层清除
+  uiCtx.clearRect(0,0,W,H);
+  // 艺术层：显示保存的星座形状（静态背景）
+  artCtx.clearRect(0,0,W,H);
+  
+  // 保持视频背景显示
+  const videoElement = document.getElementById("videoElement");
+  if(videoElement) {
+    videoElement.classList.add("stage1Visible");
+  }
+  
+  // 显示保存的星座形状（背景）- 绘制到艺术层
+  if(savedPolygonGlobal) {
+    drawStage1Polyline(savedPolygonGlobal, artCtx);
+  }
+  
+  // 不执行任何手部检测或更新逻辑，只是保持背景显示
+}
+
+// 在 stage1.5 到 stage2 的过渡状态时，只保持背景显示，不执行手势识别
+function doStage1_5To2Transition(){
+  // 显示实时视频背景
+  const videoElement = document.getElementById("videoElement");
+  if(videoElement) {
+    videoElement.classList.add("stage1Visible");
+  }
+  
+  // 艺术层：显示保存的星座形状（静态背景）
+  if(savedPolygonGlobal) {
+    artCtx.clearRect(0,0,W,H);
+    drawStage1Polyline(savedPolygonGlobal, artCtx);
+  }
+  
+  // UI 层清除（不再执行 stage1 的手势识别逻辑，防止重复触发）
+  uiCtx.clearRect(0,0,W,H);
+  
+  // 不执行任何手势识别或绘制逻辑，只保持背景显示
+}
+
+// 进入 stage1.5
+function enterStage1_5(){
+  stage = 1.5;
+  // 重置 stage1 手势识别状态，防止在 stage1.5 中重复触发
+  stage1TipSequenceState = "completed";
+  stage1GestureDetectionStartTime = 0;
+  // 保持视频背景显示（和 stage1 一样）
+  // 初始化 Stage1.5 状态
+  stage1_5State = "waitingPinch";
+  stage1_5LineDrawn = false;
+  stage1_5StateChangeTime = performance.now();
+  // 清空绘画数据
+  strokePolylines = [];
+  currentStrokePath = null;
+  penHist = [];
+  lastPen = null;
+  pinching = false;
+  inkCtx.clearRect(0, 0, W, H);
+  // 设置脏标记，让艺术层在下一帧显示星座背景
+  artCanvasDirty = true;
+  updateActivityTime();
+}
+
+
+let lockedFingerStars = null;
+
+
+function enterStage3FromStage2(){
+  if(stage === 3) return;
+  stage = 3;
+  stage2Warping = false;
+  resetStage2PushDetection();
+  updateActivityTime();
+  RIGHT_BOUNDARY.isAtBoundary = false;
+  RIGHT_BOUNDARY.hasShownHint = false;
+  RIGHT_BOUNDARY.canReturn = false;
+  RIGHT_BOUNDARY.isBouncing = false;
+  
+  // 重置 Stage2 推开检测状态
+  stage2PushInitialDist = null;
+  stage2PushMinDist = null;
+  stage2PushDetectionStartTime = 0;
+
+  const thumb = captureThumbnail(640, 400);
+  const rec = {
+    id: Date.now(),
+    date: new Date(),
+    dateStr: new Date().toLocaleString(),
+    thumb,
+    poly: savedPolygonGlobal ? savedPolygonGlobal.map(p=>({...p})) : [],
+    strokePolylines: cloneStrokePolylines()
+  };
+  creations.push(rec);
+
+  // 如果有经过 Warp 的影子星座，就直接把它作为这次作品的 3D 星座
+  if(shadowConstellation){
+    shadowConstellation.userData.isUserCreation = true;
+    shadowConstellation.userData.creationId = rec.id;
+
+    // 把画出来的线变成 3D 轨迹附加在这个 group 上
+    const strokeSets = normalizeStrokePolylines(rec.strokePolylines || []);
+    if(strokeSets.length){
+      const strokeGroup = new THREE.Group();
+      for(let path of strokeSets){
+        if(path.length < 2) continue;
+        const positions = [];
+        for(let p of path){
+          positions.push(
+            (p.x - W/2) * 0.6,
+            -(p.y - H/2) * 0.6,
+            -20
+          );
+        }
+        const geom = new THREE.BufferGeometry();
+        geom.setAttribute("position", new THREE.Float32BufferAttribute(positions,3));
+        const mat = new THREE.LineBasicMaterial({
+          color: 0xffe6cc,
+          transparent: true,
+          opacity: 0.95,
+          blending: THREE.AdditiveBlending
+        });
+        const line = new THREE.Line(geom, mat);
+        line.position.z = 0;
+        strokeGroup.add(line);
+      }
+      if(strokeGroup.children.length){
+        shadowConstellation.add(strokeGroup);
+        shadowConstellation.userData.strokeLine = strokeGroup;
+      }
+    }
+    // 标记为已完成的影子星座，并挂到这条记录上
+    shadowConstellation.userData.isShadowConstellationFinished = true;
+    rec.group = shadowConstellation;
+    shadowConstellation = null;
+  }else{
+    // 如果因为某些原因没有影子星座，退回到原来的构建方式
+    addCreationToScene(rec);
+  }
+
+  // 确保旧作品也在场景里，并排布好位置
+  for(let c of creations){
+    if(!c.group) addCreationToScene(c);
+  }
+  layoutCreationsInScene();
+
+  addGalleryTile(rec);
+  saveCreationsToStorage();
+
+  artCanvas.style.display = "none";
+  uiCanvas.style.display = "none";
+  inkCtx.clearRect(0,0,W,H);
+  document.getElementById("goStage3Btn").style.display = "none";
+  document.getElementById("galleryBtn").style.display = "block";
+  strokePolylines = [];
+  currentStrokePath = null;
+  
+  // 显示完成标语
+  showStage2To3Tip();
+}
+function enterStage3FromTitle(){
+  if(stage === 3) return;
+  stage = 3;
+  updateActivityTime();
+  RIGHT_BOUNDARY.isAtBoundary = false;
+  RIGHT_BOUNDARY.hasShownHint = false;
+  RIGHT_BOUNDARY.canReturn = false;
+  RIGHT_BOUNDARY.isBouncing = false;
+  
+  document.getElementById("titleOverlay").style.display = "none";
+  document.getElementById("galleryBtn").style.display = "block";
+  artCanvas.style.display = "none";
+  uiCanvas.style.display = "none";
+  
+    // [修复] 生成并展示画廊
+    // 1. 遍历所有作品，如果还没有生成 3D 组 (group)，则立即生成并加入场景
+  for(let c of creations){
+    if(!c.group) addCreationToScene(c);
+  }
+
+  // 2. 将它们在 3D 空间中排布好
+  layoutCreationsInScene();
+    // 重置相机位置
+  camera.position.set(0, 0, 1200);
+  camTargetX = 0;
+  camTargetY = 0;
+  camTargetZ = 1200;
+}
+document.getElementById("goStage3Btn").onclick = ()=>{ enterStage3FromStage2(); };
+
+//   阶段跳转功能
+function jumpToStage(targetStage){
+  if(stage === targetStage) return;
+  
+  // 隐藏标题界面
+  document.getElementById("titleOverlay").style.display = "none";
+  
+  // 隐藏提示文字（按键进入时不应显示）
+  const instructionText = document.getElementById("instructionText");
+  if(instructionText) {
+    instructionText.style.display = "none";
+  }
+  
+  // 隐藏视频背景（如果之前显示）
+  const videoElement = document.getElementById("videoElement");
+  if(videoElement) {
+    videoElement.classList.remove("stage1Visible");
+  }
+  
+  // 重置相机位置
+  camera.position.set(0, 0, 1200);
+  camTargetX = 0;
+  camTargetY = 0;
+  camTargetZ = 1200;
+  
+  if(targetStage === 1){
+    // 跳转到 Stage 1：使用与正常进入相同的流程
+    enterStage1FromTitle();
+  } else if(targetStage === 2){
+    // 跳转到 Stage 2：需要先创建一个默认的多边形
+    // 创建一个简单的默认星座形状（8个点，形成两个手的位置）
+    const centerX = W / 2;
+    const centerY = H / 2;
+    const radius = 150;
+    const defaultPolygon = [];
+    // 左手4个点（左侧）
+    for(let i = 0; i < 4; i++){
+      const angle = Math.PI * (0.5 + i * 0.3);
+      defaultPolygon.push({
+        x: centerX - radius * 1.5 + radius * Math.cos(angle),
+        y: centerY + radius * Math.sin(angle)
+      });
+    }
+    // 右手4个点（右侧）
+    for(let i = 0; i < 4; i++){
+      const angle = Math.PI * (0.5 + i * 0.3);
+      defaultPolygon.push({
+        x: centerX + radius * 1.5 + radius * Math.cos(angle),
+        y: centerY + radius * Math.sin(angle)
+      });
+    }
+    savedPolygonGlobal = defaultPolygon;
+    stage = 2;
+    
+    // 准备 3D 影子星座
+    prepareShadowConstellationForStage2();
+    
+    // 显示工具覆盖层
+    setToolOverlayVisible(true);
+    
+    // 显示画布
+    artCanvas.style.display = "block";
+    uiCanvas.style.display = "block";
+    
+    // 重置绘画状态
+    strokePolylines = [];
+    currentStrokePath = null;
+    penHist = [];
+    lastPen = null;
+    pinching = false;
+    inkCtx.clearRect(0, 0, W, H);
+    artCtx.clearRect(0, 0, W, H);
+    uiCtx.clearRect(0, 0, W, H);
+    // 设置脏标记，让艺术层在下一帧显示星座背景
+    artCanvasDirty = true;
+    
+    // 隐藏提示
+    const stage1Hint = document.getElementById("stage1Hint");
+    if(stage1Hint) {
+      stage1Hint.style.display = "none";
+      stage1Hint.classList.remove("visible");
+    }
+    const stage2Hint = document.getElementById("stage2Hint");
+    if(stage2Hint) {
+      stage2Hint.style.display = "block";
+      requestAnimationFrame(() => {
+        stage2Hint.classList.add("visible");
+      });
+    }
+    const stage2TopHint = document.getElementById("stage2TopHint");
+    if(stage2TopHint) {
+      stage2TopHint.style.display = "block";
+      requestAnimationFrame(() => {
+        stage2TopHint.classList.add("visible");
+      });
+    }
+    
+    document.getElementById("goStage3Btn").style.display = "none";
+    
+    updateActivityTime();
+  } else if(targetStage === 3){
+    // 跳转到 Stage 3：直接进入画廊
+    enterStage3FromTitle();
+  }
+}
+
+// 为所有阶段选择按钮添加事件监听
+function bindStageSelectButtons(){
+  const buttons = document.querySelectorAll(".stageSelectBtn");
+  buttons.forEach(btn => {
+    // 移除旧的事件监听器（如果有）
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    // 添加新的事件监听器
+    newBtn.addEventListener("click", ()=>{
+      const targetStage = parseInt(newBtn.getAttribute("data-stage"));
+      jumpToStage(targetStage);
+    });
+  });
+}
+
+// 立即绑定（如果元素已存在）
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", () => {
+    bindStageSelectButtons();
+    initStars(); // Initialize stars for Mystic Astral Clockwork animation
+  });
+} else {
+  // DOM 已经加载完成，立即绑定
+  bindStageSelectButtons();
+  initStars(); // Initialize stars for Mystic Astral Clockwork animation
+}
+
+//   键盘事件：按 q 键显示/隐藏阶段选择按钮
+document.addEventListener("keydown", (e) => {
+  // 只响应 q 键（不区分大小写）
+  if(e.key.toLowerCase() === 'q'){
+    const stageSelectButtons = document.getElementById("stageSelectButtons");
+    if(stageSelectButtons) {
+      // 切换显示/隐藏
+      stageSelectButtons.classList.toggle("visible");
+    }
+  }
+});
+
+//   Mediapipe
+let handsData = [];
+const video = document.getElementById("videoElement");
+async function initUserCamera(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({video:true});
+    video.srcObject = stream;
+    await video.play().catch(()=>{});
+  }catch(err){}
+}
+initUserCamera();
+let hands = null;
+if(typeof Hands !== "undefined"){
+  hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
+  hands.setOptions({ maxNumHands:2, modelComplexity:1, minDetectionConfidence:0.6, minTrackingConfidence:0.6 });
+  hands.onResults(res=>{
+    handsData = res.multiHandLandmarks || [];
+    controlCameraByHands(handsData);
+  });
+}
+let camMP = null;
+function startMediaPipeCamera(){
+  if(!hands) return;
+  if(typeof Camera === "undefined") return;
+  camMP = new Camera(video,{
+    onFrame:async()=>{ await hands.send({image:video}); },
+    width:640, height:480
+  });
+  camMP.start().catch(()=>{});
+}
+startMediaPipeCamera();
+
+//   Animate
+function animate(){
+  if(stage !== 0 && stage !== 1 && stage !== 1.5 && stage !== 2 && stage !== 3){
+    const now = performance.now();
+    if(now - lastActivityTime >= INACTIVITY_TIMEOUT) returnToTitle();
+  }
+  if(stage === 0) detectTitleHands();
+  if(stage === 2) detectStage2HandsAndMaybeWarp();
+  setToolOverlayVisible(stage === 2);
+  const stage1Hint = document.getElementById('stage1Hint');
+  if(stage1Hint) {
+    if(stage === 1) {
+      stage1Hint.style.display = 'block';
+      requestAnimationFrame(() => {
+        stage1Hint.classList.add("visible");
+      });
+    } else {
+      stage1Hint.classList.remove("visible");
+      // 等待渐变消失后再隐藏
+      setTimeout(() => {
+        if(stage !== 1) stage1Hint.style.display = 'none';
+      }, 600);
+    }
+  }
+  const stage2Hint = document.getElementById('stage2Hint');
+  if(stage2Hint) {
+    if(stage === 2 && !stage2Warping) {
+      stage2Hint.style.display = 'block';
+      requestAnimationFrame(() => {
+        stage2Hint.classList.add("visible");
+      });
+    } else {
+      stage2Hint.classList.remove("visible");
+      // 等待渐变消失后再隐藏
+      setTimeout(() => {
+        if(stage !== 2 || stage2Warping) stage2Hint.style.display = 'none';
+      }, 600);
+    }
+  }
+  const stage2TopHint = document.getElementById('stage2TopHint');
+  if(stage2TopHint) {
+    if(stage === 2 && !stage2Warping) {
+      stage2TopHint.style.display = 'block';
+      requestAnimationFrame(() => {
+        stage2TopHint.classList.add("visible");
+      });
+    } else {
+      stage2TopHint.classList.remove("visible");
+      // 等待渐变消失后再隐藏
+      setTimeout(() => {
+        if(stage !== 2 || stage2Warping) stage2TopHint.style.display = 'none';
+      }, 600);
+    }
+  }
+
+  warpAmplifier = 1.0;
+  if(stage2Warping){
+    const now = performance.now();
+    const t = clamp((now - stage2WarpStart) / stage2WarpDuration, 0, 1);
+    const ease = t<0.5 ? 2*t*t : -1 + (4-2*t)*t;
+
+    // 相机向深空推进
+    camera.position.z = THREE.MathUtils.lerp(stage2WarpStartZ, stage2WarpTargetZ, ease);
+    // Warp 强度随时间增强，星空被“拉扯”成速度线
+    warpAmplifier = 1.0 + ease * 9.0;
+
+    // A1：影子星座被快速吸入深空
+    if(shadowConstellation){
+      const baseZ = (shadowConstellation.userData && shadowConstellation.userData.baseZ !== undefined)
+        ? shadowConstellation.userData.baseZ
+        : -1400;
+
+      // 起点略近一点，终点回到 baseZ（= Stage3 中正常的位置）
+      const startZ = baseZ + 400;
+      const endZ   = baseZ;
+
+      // 先略微放大再缩小，像被“吸进”宇宙
+      let scaleFactor;
+      if(ease < 0.2){
+        const k = ease / 0.2;
+        scaleFactor = 1.0 + k * 0.3;   // 放大到 1.3
+      }else{
+        const k = (ease - 0.2) / 0.8;
+        scaleFactor = 1.3 - k * 0.3;   // 再缩回 1.0
+      }
+
+      shadowConstellation.scale.set(scaleFactor, scaleFactor, scaleFactor);
+      shadowConstellation.position.z = THREE.MathUtils.lerp(startZ, endZ, ease);
+      // 保持角度与 Stage2 一致，不在 Warp 中永久旋转
+      shadowConstellation.rotation.y = 0;
+    }
+
+    if(t >= 1){
+      warpAmplifier = 1.0;
+      finalizeStage2ToStage3();
+    }
+  }
+
+  if(stage === 0) {
+    // 标题界面：隐藏视频背景和画布
+    const videoElement = document.getElementById("videoElement");
+    if(videoElement) {
+      videoElement.classList.remove("stage1Visible");
+    }
+    artCanvas.style.display = "none";
+    uiCanvas.style.display = "none";
+    
+    // 显示标题覆盖层（如果文字未激活）
+    const titleOverlay = document.getElementById("titleOverlay");
+    if(titleOverlay && !warpTextState.isActive) {
+      titleOverlay.style.display = "flex";
+    }
+    
+    // 显示提示文字（仅在标题界面显示）
+    const instructionText = document.getElementById("instructionText");
+    if(instructionText) {
+      instructionText.style.display = "block";
+      instructionText.style.opacity = "0.85";
+    }
+  } else if(stage===1) doStage1();
+  else if(stage==="stage1To1_5") doStage1To1_5Transition();
+  else if(stage==="stage1_5To2") doStage1_5To2Transition();
+  else if(stage===1.5) doStage1_5();
+  else if(stage===2) doStage2();
+  else {
+    // 非 stage1 和 stage1.5 时隐藏视频背景
+    const videoElement = document.getElementById("videoElement");
+    if(videoElement) {
+      videoElement.classList.remove("stage1Visible");
+    }
+    // 非标题界面时隐藏提示文字
+    const instructionText = document.getElementById("instructionText");
+    if(instructionText) {
+      instructionText.style.display = "none";
+    }
+  }
+
+  // 更新标题背景（在stage 0时）
+  updateTitleBackground();
+  
+  updateCamera();
+  warpStarfield();
+  rotateDeepSpace();
+
+  const STROKE_SHOW_DIST = 3000;
+  for(let rec of creations){
+    if(!rec.group) continue;
+    const line = rec.group.userData.strokeLine;
+    if(line){
+      const d = camera.position.distanceTo(rec.group.position);
+      line.visible = (d < STROKE_SHOW_DIST);
+    }
+  }
+
+  renderer.render(scene,camera);
+  requestAnimationFrame(animate);
+}
+animate();
+
+</script>
+</body>
+</html>
