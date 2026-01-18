@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>My Star - てのひら星座工房</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+  <style>
+    @font-face {
+      font-family: "Kan412TyposStd";
+      src: url("fonts/Kan412TyposStd-Regular.otf") format("opentype");
+      font-weight: normal;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Kan410TyposStd";
+      src: url("fonts/Kan410TyposStd-Regular.otf") format("opentype");
+      font-weight: normal;
+      font-style: normal;
+    }
+    
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #000;
+      /* 本編に近い、深みのある宇宙の背景色 */
+      background: 
+        radial-gradient(circle at 50% 120%, rgba(40, 60, 100, 0.4) 0%, transparent 60%),
+        radial-gradient(circle at 80% 20%, rgba(50, 30, 70, 0.25) 0%, transparent 50%),
+        radial-gradient(circle at 20% 40%, rgba(20, 40, 60, 0.2) 0%, transparent 50%),
+        linear-gradient(to bottom, #020305 0%, #080a12 100%);
+      color: white;
+      font-family: "Kan412TyposStd", "漢字タイポス４１２ Std", "Helvetica Neue", Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 背景の星空レイヤー */
+    #bgCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      opacity: 0.8;
+    }
+    
+    /* 星座描画レイヤー */
+    #starCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      /* 星座自体を少し発光させるフィルター */
+      filter: drop-shadow(0 0 8px rgba(200, 220, 255, 0.3));
+    }
+
+    /* シネマティックな周辺減光（四隅を暗くする） */
+    .vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      background: radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.6) 100%);
+    }
+
+    .ui-layer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+      padding: 40px 20px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      margin: 0;
+      opacity: 0;
+      transform: translateY(-10px);
+      animation: fadeInMove 2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards 0.5s;
+    }
+
+    h1 img {
+      max-width: 200px;
+      height: auto;
+      filter: drop-shadow(0 0 15px rgba(180, 220, 255, 0.6));
+    }
+
+    .date-label {
+      font-family: "Kan410TyposStd", "漢字タイポス４１０ Std", "Helvetica Neue", Arial, sans-serif;
+      font-size: 11px;
+      color: rgba(180, 200, 255, 0.7);
+      margin-top: 12px;
+      letter-spacing: 1px;
+      opacity: 0;
+      animation: fadeIn 2s ease forwards 0.8s;
+    }
+
+    .footer-hint {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+      background: rgba(10, 15, 30, 0.65);
+      padding: 10px 20px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.15);
+      backdrop-filter: blur(4px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      opacity: 0;
+      animation: fadeIn 2s ease forwards 1.5s;
+      font-family: "Kan410TyposStd", "漢字タイポス４１０ Std", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    @keyframes fadeIn { to { opacity: 1; } }
+    @keyframes fadeInMove { 
+      to { opacity: 1; transform: translateY(0); } 
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="bgCanvas"></canvas>
+  <canvas id="starCanvas"></canvas>
+  <div class="vignette"></div>
+
+  <div class="ui-layer">
+    <div>
+      <h1><img src="handmoji.png" alt="handmoji"></h1>
+      <div class="date-label" id="dateText"></div>
+    </div>
+    <div class="footer-hint">スクリーンショットで保存してください</div>
+  </div>
+
+<script>
+  // ==========================================
+  //  データ復元・共通処理
+  // ==========================================
+  function expand(flatArray) {
+    if (!flatArray || flatArray.length === 0) return [];
+    const points = [];
+    for (let i = 0; i < flatArray.length; i += 2) {
+      points.push({ x: flatArray[i], y: flatArray[i+1] });
+    }
+    return points;
+  }
+
+  function expandEdges(flatEdges) {
+    if (!flatEdges || flatEdges.length === 0) return null;
+    const edges = [];
+    for (let i = 0; i < flatEdges.length; i += 2) {
+      edges.push({ i: flatEdges[i], j: flatEdges[i+1] });
+    }
+    return edges;
+  }
+
+  function computeConstellationEdges(pts, maxDistance){
+    if(!pts || pts.length < 2) return [];
+    const n = pts.length;
+    const edges = [];
+    for(let i=0;i<n;i++){
+      for(let j=i+1;j<n;j++){
+        const dx = pts[j].x - pts[i].x;
+        const dy = pts[j].y - pts[i].y;
+        edges.push({i,j,dist:Math.hypot(dx,dy)});
+      }
+    }
+    edges.sort((a,b)=>a.dist-b.dist);
+    const parent = new Array(n).fill(0).map((_,i)=>i);
+    const find = x => parent[x]===x ? x : (parent[x]=find(parent[x]));
+    const unite = (a,b) => { parent[find(a)] = find(b); };
+    const chosen = [];
+    const usedPairs = new Set();
+    for(const e of edges){
+      if(find(e.i) !== find(e.j)){
+        unite(e.i,e.j);
+        chosen.push(e);
+        usedPairs.add(`${e.i}-${e.j}`);
+      }
+    }
+    const degree = new Array(n).fill(0);
+    for(const e of chosen){ degree[e.i]++; degree[e.j]++; }
+    let extraAdded = 0;
+    const MAX_EXTRA = n; 
+    for(const e of edges){
+      if(extraAdded >= MAX_EXTRA) break;
+      const key = `${e.i}-${e.j}`;
+      if(usedPairs.has(key)) continue;
+      if(maxDistance && e.dist > maxDistance) continue;
+      if(degree[e.i]>=4 || degree[e.j]>=4) continue;
+      chosen.push(e);
+      usedPairs.add(key);
+      degree[e.i]++; degree[e.j]++;
+      extraAdded++;
+    }
+    return chosen;
+  }
+
+  // ==========================================
+  //  メイン処理
+  // ==========================================
+  const urlParams = new URLSearchParams(window.location.search);
+  const binId = urlParams.get('id');
+  const compressedData = urlParams.get('d');
+  
+  // JSONBin API Key
+  const API_KEY = '$2a$10$H56XRVSRijO/AVt8OmmhKeRKR4gYZqqxtyeYFd0dpvTKy2UQdhIma'; 
+
+  if (binId) {
+    fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+      method: 'GET', headers: { 'X-Master-Key': API_KEY }
+    })
+    .then(r => r.json())
+    .then(result => {
+      const raw = result.record;
+      const data = {
+        d: raw.d,
+        p: expand(raw.p),
+        s: (raw.s || []).map(stroke => expand(stroke)),
+        e: expandEdges(raw.e) 
+      };
+      if(data.d) document.getElementById('dateText').innerText = data.d;
+      initVisuals(data);
+    })
+    .catch(e => { console.error(e); });
+  } else if (compressedData) {
+    try {
+      const json = LZString.decompressFromEncodedURIComponent(compressedData);
+      const raw = JSON.parse(json);
+      const data = { d: raw.d, p: raw.p, s: raw.s, e: null };
+      initVisuals(data);
+    } catch(e){}
+  } else {
+    // データがなくても背景だけは描画して雰囲気を出す
+    initBackgroundOnly();
+  }
+
+  // データがない場合の背景描画用
+  function initBackgroundOnly() {
+    const dpr = window.devicePixelRatio || 1;
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    initDeepSpaceBackground(W, H, dpr);
+  }
+
+  // ==========================================
+  //  描画ロジック
+  // ==========================================
+  function initVisuals(data) {
+    // 1. 高解像度対応
+    const dpr = window.devicePixelRatio || 1;
+    let W = window.innerWidth;
+    let H = window.innerHeight;
+
+    // --- 背景の星空を描画 (New) ---
+    initDeepSpaceBackground(W, H, dpr);
+
+    // --- 星座の描画 ---
+    const canvas = document.getElementById('starCanvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+
+    // データのバウンディングボックス計算
+    const allPoints = [...data.p];
+    data.s.forEach(path => allPoints.push(...path));
+
+    let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
+    allPoints.forEach(p => {
+      if(p.x<minX) minX=p.x; if(p.x>maxX) maxX=p.x;
+      if(p.y<minY) minY=p.y; if(p.y>maxY) maxY=p.y;
+    });
+
+    const contentW = maxX - minX;
+    const contentH = maxY - minY;
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    
+    // 画面の70%くらいに収まるようにスケール計算
+    const scale = Math.min(W * 0.7 / contentW, H * 0.6 / contentH);
+
+    // 連線計算
+    let edges;
+    if (data.e && data.e.length > 0) {
+      edges = data.e;
+    } else {
+      const maxDist = Math.max(contentW, contentH) * 0.15; 
+      edges = computeConstellationEdges(data.p, maxDist);
+    }
+
+    let tiltX=0, tiltY=0;
+    let offsetX=0, offsetY=0;
+
+    // ジャイロ・マウスによる視差効果
+    window.addEventListener('deviceorientation', (e) => {
+      if(e.gamma!=null) tiltX = e.gamma * 0.5;
+      if(e.beta!=null) tiltY = (e.beta - 45) * 0.5;
+    });
+    window.addEventListener('mousemove', (e) => {
+      tiltX = (e.clientX - W/2)/25; 
+      tiltY = (e.clientY - H/2)/25;
+    });
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // 慣性ありで動かす
+      offsetX += (tiltX - offsetX) * 0.05;
+      offsetY += (tiltY - offsetY) * 0.05;
+
+      ctx.save();
+      ctx.scale(dpr, dpr); 
+
+      // 画面中央へ移動 + パララックス
+      ctx.translate(W/2 + offsetX, H/2 + offsetY);
+      ctx.scale(scale, scale);
+      ctx.translate(-centerX, -centerY);
+
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      // 1. 補助線 (薄く光る)
+      ctx.shadowBlur = 0;
+      ctx.lineWidth = 4.5;
+      ctx.strokeStyle = "rgba(100, 150, 255, 0.08)";
+      edges.forEach(e => {
+        const p1 = data.p[e.i]; const p2 = data.p[e.j];
+        if(p1 && p2) { ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
+      });
+
+      // 2. メインの線 (白く輝く)
+      ctx.shadowColor = "rgba(200, 220, 255, 0.8)";
+      ctx.shadowBlur = 10; // 光彩追加
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "rgba(230, 240, 255, 0.9)";
+      edges.forEach(e => {
+        const p1 = data.p[e.i]; const p2 = data.p[e.j];
+        if(p1 && p2) { ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
+      });
+      ctx.shadowBlur = 0; // リセット
+
+      // 3. 筆跡 (Glowあり)
+      data.s.forEach(path => {
+        if(path.length < 2) return;
+        
+        // 外部のぼやけ
+        ctx.beginPath();
+        ctx.moveTo(path[0].x, path[0].y);
+        path.forEach(p => ctx.lineTo(p.x, p.y));
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = "rgba(100, 200, 255, 0.15)";
+        ctx.stroke();
+
+        // 芯
+        ctx.beginPath();
+        ctx.moveTo(path[0].x, path[0].y);
+        path.forEach(p => ctx.lineTo(p.x, p.y));
+        ctx.shadowColor = "rgba(180, 210, 255, 0.5)";
+        ctx.shadowBlur = 5;
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = "rgba(240, 250, 255, 0.9)";
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      });
+
+      // 4. 星々 (本編のような多重円)
+      data.p.forEach(p => {
+        // Outer Glow
+        ctx.beginPath(); ctx.arc(p.x, p.y, 16, 0, Math.PI*2);
+        ctx.fillStyle = "rgba(100, 150, 255, 0.05)"; ctx.fill();
+        
+        // Mid Circle
+        ctx.beginPath(); ctx.arc(p.x, p.y, 7, 0, Math.PI*2);
+        ctx.fillStyle = "rgba(180, 210, 255, 0.2)"; ctx.fill();
+
+        // Core
+        ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+        ctx.fillStyle = "#ffffff"; 
+        ctx.shadowColor = "#fff"; ctx.shadowBlur = 12; ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      ctx.restore();
+      requestAnimationFrame(draw);
+    }
+    
+    draw();
+  }
+
+  // ==========================================
+  //  新しい深宇宙背景生成 (Canvas 2D)
+  //  Three.jsを使わずにリッチな星空を作る
+  // ==========================================
+  function initDeepSpaceBackground(W, H, dpr) {
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+    
+    ctx.scale(dpr, dpr);
+
+    // 星の生成
+    const stars = [];
+    const numStars = 2000; // 星の数
+
+    for(let i=0; i<numStars; i++) {
+      stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        size: Math.random() < 0.98 ? Math.random() * 0.8 : Math.random() * 2 + 1, // 98%は小さい塵、2%は輝く星
+        alpha: Math.random(),
+        speed: Math.random() * 0.05 // 瞬き速度
+      });
+    }
+
+    let time = 0;
+
+    function animateBg() {
+      ctx.clearRect(0, 0, W, H);
+
+      // 星を描画
+      stars.forEach(star => {
+        // 瞬き計算
+        const twinkle = Math.sin(time * star.speed + star.x) * 0.3 + 0.7;
+        const currentAlpha = star.alpha * twinkle * 0.8;
+
+        ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI*2);
+        ctx.fill();
+      });
+
+      time += 0.1;
+      requestAnimationFrame(animateBg);
+    }
+    animateBg();
+  }
+
+  window.addEventListener('resize', () => location.reload());
+</script>
+</body>
+</html>
