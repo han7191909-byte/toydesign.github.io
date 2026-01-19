@@ -2009,7 +2009,7 @@ function drawStage1Polyline(pts, targetCtx = null, forcedEdges = null){
   c.lineCap="round";
   c.lineJoin="round";
 
-  c.lineWidth = 6.75; // 从 4.5 放大到 6.75 (1.5倍)
+  c.lineWidth = 4.5; // 从 4.5 放大到 6.75 (1.5倍)
   c.strokeStyle = "rgba(255,255,255,0.28)";
   for(const e of chosen){
     const p1=pts[e.i], p2=pts[e.j];
@@ -2019,7 +2019,7 @@ function drawStage1Polyline(pts, targetCtx = null, forcedEdges = null){
     c.stroke();
   }
 
-  c.lineWidth = 1.8; // 从 1.2 放大到 1.8 (1.5倍)
+  c.lineWidth = 1.2; // 从 1.2 放大到 1.8 (1.5倍)
   c.strokeStyle = "rgba(255,255,255,0.85)";
   for(const e of chosen){
     const p1=pts[e.i], p2=pts[e.j];
@@ -5681,7 +5681,7 @@ function enterStage1_5State(newState) {
     "drawing": "そのまま指先を動かすと、星の軌跡が描かれます。",
     "waitingRelease": "指を離してみよう！線が止まります。",
     "complete": "星空で線を描けましたね！！",
-    "progressBar": "下のボタンを長押しして、次のステージに入りましょう！"
+    "progressBar": "人差し指と親指で下の円をつまみ、そのまま長押しして、次のステージに入りましょう！"
   };
   
   const message = tipMessages[newState];
