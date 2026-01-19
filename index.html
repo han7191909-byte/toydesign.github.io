@@ -55,29 +55,29 @@
     }
     #goStage3Btn{
       position:fixed;
-      top:16px;
-      right:16px;
+      top:1.6vmin;
+      right:1.6vmin;
       z-index:20;
-      padding:8px 16px;
-      font-size:14px;
+      padding:1.2vmin 2vmin;
+      font-size:2vmin;
       background:rgba(20,25,40,0.85);
-      border:1px solid rgba(255,255,255,0.4);
+      border:0.1vmin solid rgba(255,255,255,0.4);
       color:white;
-      border-radius:6px;
+      border-radius:0.8vmin;
       cursor:pointer;
       display:none;
     }
     #galleryBtn{
       position:fixed;
-      top:16px;
-      left:16px;
+      top:1.6vmin;
+      left:1.6vmin;
       z-index:20;
-      padding:8px 12px;
-      font-size:14px;
+      padding:1.2vmin 2vmin;
+      font-size:2vmin;
       background:rgba(20,25,40,0.85);
-      border:1px solid rgba(255,255,255,0.4);
+      border:0.1vmin solid rgba(255,255,255,0.4);
       color:white;
-      border-radius:6px;
+      border-radius:0.8vmin;
       cursor:pointer;
       display:none;
     }
@@ -105,41 +105,41 @@
       background:rgba(0,0,0,0.85);
       display:none;
       color:white;
-      padding:28px;
+      padding:2.8vmin;
       box-sizing:border-box;
     }
     #galleryOverlay .closeBtn{
       position:absolute;
-      top:12px;
-      right:12px;
+      top:1.2vmin;
+      right:1.2vmin;
       background:transparent;
-      border:1px solid rgba(255,255,255,0.25);
+      border:0.1vmin solid rgba(255,255,255,0.25);
       color:white;
-      padding:6px 10px;
-      border-radius:6px;
+      padding:0.6vmin 1vmin;
+      border-radius:0.6vmin;
       cursor:pointer;
     }
     #galleryInner{
       position:relative;
-      margin-top:8px;
-      height:calc(100% - 64px);
+      margin-top:0.8vmin;
+      height:calc(100% - 6.4vmin);
       overflow-x:auto;
       overflow-y:hidden;
       white-space:nowrap;
       display:flex;
       flex-wrap:wrap;
       align-content:flex-start;
-      gap:12px;
-      padding-bottom:12px;
+      gap:1.2vmin;
+      padding-bottom:1.2vmin;
     }
     .galleryTile{
       display:inline-block;
-      width:260px;
-      height:150px;
+      width:26vmin;
+      height:15vmin;
       background:rgba(10,12,18,0.6);
-      border:1px solid rgba(255,255,255,0.08);
-      border-radius:8px;
-      padding:6px;
+      border:0.1vmin solid rgba(255,255,255,0.08);
+      border-radius:0.8vmin;
+      padding:0.6vmin;
       box-sizing:border-box;
       flex: 0 0 auto;
       position:relative;
@@ -148,27 +148,27 @@
       width:100%;
       height:100%;
       object-fit:cover;
-      border-radius:6px;
+      border-radius:0.6vmin;
       display:block;
     }
     .galleryMeta{
       position:absolute;
-      left:8px;
-      bottom:8px;
-      right:48px;
-      font-size:12px;
+      left:0.8vmin;
+      bottom:0.8vmin;
+      right:4.8vmin;
+      font-size:1.2vmin;
       color:#fff;
-      text-shadow:0 1px 4px rgba(0,0,0,0.6);
+      text-shadow:0 0.1vmin 0.4vmin rgba(0,0,0,0.6);
     }
     .galleryDel{
       position:absolute;
-      right:8px;
-      bottom:8px;
-      padding:6px;
+      right:0.8vmin;
+      bottom:0.8vmin;
+      padding:0.6vmin;
       background:rgba(255,20,20,0.95);
-      border-radius:6px;
+      border-radius:0.6vmin;
       cursor:pointer;
-      font-size:12px;
+      font-size:1.2vmin;
       border:none;
       color:white;
     }
@@ -193,57 +193,57 @@
       padding:0;
       background: none;
       border: none;
-      transform: translateY(-35px);
+      transform: translateY(-3.5vmin);
     }
     @keyframes floatY {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
+      0% { transform: translateY(0vmin); }
+      50% { transform: translateY(-1vmin); }
+      100% { transform: translateY(0vmin); }
     }
     @keyframes glow {
-      0% { text-shadow: 0 0 6px rgba(255,255,255,0.55), 0 0 20px rgba(120,180,255,0.06); }
-      50% { text-shadow: 0 0 18px rgba(255,255,255,0.95), 0 0 40px rgba(120,180,255,0.25); }
-      100% { text-shadow: 0 0 6px rgba(255,255,255,0.55), 0 0 20px rgba(120,180,255,0.06); }
+      0% { text-shadow: 0 0 0.6vmin rgba(255,255,255,0.55), 0 0 2vmin rgba(120,180,255,0.06); }
+      50% { text-shadow: 0 0 1.8vmin rgba(255,255,255,0.95), 0 0 4vmin rgba(120,180,255,0.25); }
+      100% { text-shadow: 0 0 0.6vmin rgba(255,255,255,0.55), 0 0 2vmin rgba(120,180,255,0.06); }
     }
     #titleCard h1{
-      margin:0 0 8px 0;
-      font-size:40px;
+      margin:0 0 1.5vmin 0;
+      font-size:5vmin;
       font-family: "Kan412TyposStd", "漢字タイポス４１２ Std", "Helvetica Neue", Arial, sans-serif;
-      letter-spacing:3px;
+      letter-spacing:0.5vmin;
       color:#eaf6ff;
       text-shadow:
-        0 0 6px rgba(210,240,255,0.9),
-        0 8px 24px rgba(10,16,30,0.55);
+        0 0 0.6vmin rgba(210,240,255,0.9),
+        0 0.8vmin 2.4vmin rgba(10,16,30,0.55);
       animation: floatY 3.8s ease-in-out infinite, glow 2.6s ease-in-out infinite;
       will-change: transform, text-shadow;
     }
     #stageSelectButtons{
-      margin-top:32px;
+      margin-top:3.2vmin;
       display:none;
       flex-direction:column;
-      gap:12px;
+      gap:1.2vmin;
       align-items:center;
     }
     #stageSelectButtons.visible{
       display:flex;
     }
     .stageSelectBtn{
-      padding:10px 24px;
-      font-size:14px;
+      padding:1.5vmin 3vmin;
+      font-size:2vmin;
       background:rgba(20,25,40,0.75);
-      border:1px solid rgba(255,255,255,0.3);
+      border:0.1vmin solid rgba(255,255,255,0.3);
       color:white;
-      border-radius:8px;
+      border-radius:1vmin;
       cursor:pointer;
       transition:all 0.3s ease;
-      min-width:180px;
-      letter-spacing:1px;
+      min-width:25vmin;
+      letter-spacing:0.15vmin;
     }
     .stageSelectBtn:hover{
       background:rgba(40,50,70,0.85);
       border-color:rgba(255,255,255,0.5);
-      transform:translateY(-2px);
-      box-shadow:0 4px 12px rgba(120,180,255,0.3);
+      transform:translateY(-0.2vmin);
+      box-shadow:0 0.4vmin 1.2vmin rgba(120,180,255,0.3);
     }
 
     /* --- Style 01: Cinematic Blur (电影字幕风) --- */
@@ -256,25 +256,25 @@
       justify-content: center;
       pointer-events: none; /* 允许点击穿透 */
       background: transparent; /* 移除背景色，只展示文字 */
-      perspective: 1000px;
+      perspective: 100vmin;
     }
     #tipText {
       font-family: "Kan410TyposStd", "漢字タイポス４１０ Std", "Helvetica Neue", Arial, sans-serif;
-      font-size: 16px;
+      font-size: 2vmin;
       font-weight: 500;
-      line-height: 2.2;
+      line-height: 1.8;
       color: #fff;
       text-align: center;
       letter-spacing: 0.2em; /* 宽字间距增加高级感 */
-      max-width: 900px;
+      max-width: 80vw;
       margin: 0 auto;
-      margin-top: 70px; /* 向下移动20像素 */
+      margin-top: 7vmin; /* 向下移动 */
       /* 核心：光晕效果 */
-      text-shadow: 0 0 10px rgba(255,255,255,0.6), 0 0 20px rgba(180,220,255,0.4), 0 0 40px rgba(180,220,255,0.2);
+      text-shadow: 0 0 1vmin rgba(255,255,255,0.6), 0 0 2vmin rgba(180,220,255,0.4), 0 0 4vmin rgba(180,220,255,0.2);
       /* 动画初始状态：模糊、微放大、透明 */
       opacity: 0;
       transform: scale(1.1);
-      filter: blur(10px);
+      filter: blur(1vmin);
       /* 优雅的长过渡 */
       transition: opacity 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
@@ -282,14 +282,14 @@
     #tipOverlay.visible #tipText {
       opacity: 1;
       transform: scale(1);
-      filter: blur(0px);
+      filter: blur(0vmin);
     }
 
     /* Container for the clockwork animation */
     .s1-wrap {
       position: relative;
-      width: 600px;
-      height: 600px;
+      width: 60vmin;
+      height: 60vmin;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -299,23 +299,23 @@
     /* --- OUTER RING --- */
     .s1-ring-outer {
       position: absolute;
-      width: 384px; height: 384px;
+      width: 38.4vmin; height: 38.4vmin;
       border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+      border: 0.1vmin solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 3vmin rgba(255, 255, 255, 0.1);
       animation: rotate-cw 80s linear infinite;
       opacity: 0; transform: scale(0.9);
       transition: opacity 1.5s, transform 1.5s cubic-bezier(0.2, 1, 0.3, 1);
     }
     .s1-ring-outer::after {
-      content: ''; position: absolute; inset: 4px; border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      content: ''; position: absolute; inset: 0.4vmin; border-radius: 50%;
+      border: 0.1vmin solid rgba(255, 255, 255, 0.15);
     }
 
     /* --- MID RING (SVG) --- */
     .s1-ring-svg {
       position: absolute;
-      width: 288px; height: 288px;
+      width: 28.8vmin; height: 28.8vmin;
       animation: rotate-cw 40s linear infinite;
       opacity: 0; transform: scale(0.8);
       transition: opacity 1.2s, transform 1.2s cubic-bezier(0.2, 1, 0.3, 1);
@@ -374,26 +374,26 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 20px;
+      gap: 2vmin;
       width: 100%;
       pointer-events: none;
     }
 
     .s1-title {
       font-family: "Kan412TyposStd", "漢字タイポス４１２ Std", "Helvetica Neue", Arial, sans-serif;
-      font-size: 36px;
+      font-size: 3.6vmin;
       font-weight: 500;
       letter-spacing: 0.2em;
       color: #ffffff;
       /* 淡黄色多层光晕，与其他标语统一风格 */
-      text-shadow: 0 0 10px rgba(255,245,200,0.65), 0 0 22px rgba(238,207,161,0.45), 0 0 46px rgba(238,207,161,0.22);
+      text-shadow: 0 0 1vmin rgba(255,245,200,0.65), 0 0 2.2vmin rgba(238,207,161,0.45), 0 0 4.6vmin rgba(238,207,161,0.22);
       margin: 0; white-space: nowrap;
-      opacity: 0; transform: scale(1.1); filter: blur(10px);
+      opacity: 0; transform: scale(1.1); filter: blur(1vmin);
       transition: all 1.8s cubic-bezier(0.2, 1, 0.3, 1) 0.5s;
     }
 
     .s1-line {
-      width: 0; height: 1px;
+      width: 0; height: 0.1vmin;
       background: linear-gradient(90deg, transparent, #ffffff, transparent);
       opacity: 0.8;
       transition: width 1.2s ease 1s;
@@ -401,22 +401,22 @@
 
     .s1-desc {
       font-family: "Kan412TyposStd", "漢字タイポス４１２ Std", "Helvetica Neue", Arial, sans-serif;
-      font-size: 24px;
+      font-size: 2.4vmin;
       font-weight: 400;
       line-height: 1.8;
       color: rgba(255,255,255,0.9);
       letter-spacing: 0.1em;
       white-space: nowrap;
       /* 与标题一致的淡黄色光晕 */
-      text-shadow: 0 0 8px rgba(255,245,200,0.55), 0 0 18px rgba(238,207,161,0.38), 0 0 36px rgba(238,207,161,0.18);
-      opacity: 0; transform: translateY(10px);
+      text-shadow: 0 0 0.8vmin rgba(255,245,200,0.55), 0 0 1.8vmin rgba(238,207,161,0.38), 0 0 3.6vmin rgba(238,207,161,0.18);
+      opacity: 0; transform: translateY(1vmin);
       transition: all 1.2s ease 1.2s;
     }
 
     /* Active State: Text */
     .s1-wrap.active .s1-ring-outer { opacity: 1; transform: scale(1); }
     .s1-wrap.active .s1-title { opacity: 1; transform: scale(1); filter: blur(0); }
-    .s1-wrap.active .s1-line { width: 140px; }
+    .s1-wrap.active .s1-line { width: 14vmin; }
     .s1-wrap.active .s1-desc { opacity: 1; transform: translateY(0); }
 
     @keyframes rotate-cw { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
@@ -435,57 +435,98 @@
       opacity:1;
     }
 
-    #toolOverlay{
-      position:fixed;
-      top:50%;
-      right:24px;
-      transform:translateY(-50%);
-      z-index:30;
-      display:none;
-      flex-direction:column;
-      gap:14px;
-      pointer-events:none;
+    /* =========================================
+       Stage 2 工具栏 - 竖向悬浮球风格 + 手势悬停支持
+       ========================================= */
+    #toolOverlay {
+      position: fixed;
+      top: 50%;
+      right: 10vmin;
+      transform: translateY(-50%);
+      z-index: 30;
+      display: none; /* JS控制显示 */
+      flex-direction: column; /* 竖向排列 */
+      gap: 1.6vmin; /* 球体之间的间距 */
+      pointer-events: none; /* 容器透传点击 */
     }
-    .toolBuoy{
-      width:82px;
-      padding:12px 10px;
-      text-align:center;
-      background:rgba(15,18,30,0.55);
-      border:1px solid rgba(255,255,255,0.18);
-      color:#cfe3ff;
-      border-radius:16px;
-      font-size:13px;
-      letter-spacing:1px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.35);
-      transition:transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    /* 按钮基础样式：飘渺悬浮球 */
+    .toolBuoy {
+      width: 6vmin;
+      height: 6vmin;
+      border-radius: 50%;
+      /* 核心：半透明渐变，模拟玻璃球体 */
+      background: linear-gradient(145deg, rgba(58, 57, 87, 0.15), rgba(44, 45, 107, 0.02));
+      /* 柔和的边框光 */
+      border: 0.1vmin solid rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.6);
+      
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      pointer-events: auto; /* 按钮自身可点击/交互 */
+      
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 弹性动画 */
+      box-shadow: 0 0.3vmin 1vmin rgba(0,0,0,0.2);
     }
-    .toolBuoy .toolIcon{
-      display:block;
-      font-size:18px;
-      margin-bottom:4px;
+    /* 内部高光效果 (光泽感) */
+    .toolBuoy::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(25, 32, 106, 0.5), transparent 60%);
+      opacity: 0.4;
+      transition: opacity 0.3s ease;
     }
-    /* 撤回按钮箭头样式：顺时针旋转90度、加粗、居中 */
-    .toolBuoy[data-tool="undo"] .toolIcon{
-      transform: rotate(90deg);
-      font-weight: bold;
-      margin-left: auto;
-      margin-right: auto;
+    /* SVG 图标样式 */
+    .toolBuoy svg {
+      width: 1.7vmin;
+      height: 1.7vmin;
+      fill: currentColor;
+      opacity: 0.8;
+      transition: transform 0.3s ease;
     }
-    .toolBuoy.active{
-      border-color:rgba(255,255,255,0.7);
-      color:#ffffff;
-      transform:scale(1.06);
-      box-shadow:0 0 24px rgba(120,180,255,0.45);
+    /* 悬停状态：同时支持鼠标 :hover 和 手势 .hand-hover */
+    .toolBuoy:hover,
+    .toolBuoy.hand-hover {
+      transform: scale(1.15); /* 放大 */
+      background: linear-gradient(145deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05));
+      color: #fff;
+      border-color: rgba(255,255,255,0.4);
+      box-shadow: 0 0 1.3vmin rgba(255,255,255,0.2);
+    }
+    /* 激活状态 (选中) */
+    .toolBuoy.active {
+      background: #ffffff;
+      color: #05070a; /* 反色：黑字 */
+      border-color: #fff;
+      transform: scale(1.1);
+      box-shadow: 0 0 2vmin rgba(255,255,255,0.5); /* 强烈的白色光晕 */
+    }
+    /* 激活时隐藏内部高光 */
+    .toolBuoy.active::before {
+      opacity: 0;
+    }
+    /* 激活时图标稍微放大 */
+    .toolBuoy.active svg {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+    /* 隐藏标签文字 */
+    .toolLabel {
+      display: none;
     }
 
     #stage1Hint, #stage2Hint, #stage1_5ProgressHint, #stage2TopHint{
       position:fixed;
-      top:80px;
+      top:8vmin;
       left:50%;
       transform:translateX(-50%);
       z-index:28;
       color:#ffffff;
-      font-size:15px;
+      font-size:1.7vmin;
       font-family: "Kan410TyposStd", "漢字タイポス４１０ Std", "Helvetica Neue", Arial, sans-serif;
       text-align:center;
       display:none;
@@ -493,41 +534,43 @@
       line-height:1.8;
       opacity:0;
       transition:opacity 0.6s ease-in;
+      max-width:80vw;
       text-shadow:
-        0 0 10px rgba(255,255,255,0.8),
-        0 0 20px rgba(255,255,255,0.5),
-        0 0 30px rgba(255,255,255,0.3);
+        0 0 1vmin rgba(255,255,255,0.8),
+        0 0 2vmin rgba(255,255,255,0.5),
+        0 0 3vmin rgba(255,255,255,0.3);
     }
     #stage1Hint.visible, #stage2Hint.visible, #stage1_5ProgressHint.visible, #stage2TopHint.visible{
       opacity:1;
     }
-    /* stage2TopHint 单独设置字体大小为14px，不换行，位置往上调 */
+    /* stage2TopHint 单独设置字体大小，不换行，位置往上调 */
     #stage2TopHint {
-      font-size: 14px;
+      font-size: 1.7vmin;
       white-space: nowrap;
-      top: 60px; /* 从80px调整为60px，往上移动20px */
+      top: 6vmin; /* 从8vmin调整为6vmin，往上移动 */
     }
     /* --- 绘画控制小标语样式 --- */
     #drawingControlHint {
       position: fixed;
-      bottom: 30px;
+      bottom: 3vmin;
       left: 50%;
       transform: translateX(-50%);
       z-index: 28;
       color: #ffffff;
-      font-size: 14px;
+      font-size: 1.5vmin;
       font-family: "Kan410TyposStd", "漢字タイポス４１０ Std", "Helvetica Neue", Arial, sans-serif;
       text-align: center;
       display: none;
       pointer-events: none;
-      line-height: 1.5;
+      line-height: 1.8;
       opacity: 0;
       transition: opacity 0.6s ease-in;
       white-space: nowrap;
+      max-width: 80vw;
       text-shadow:
-        0 0 10px rgba(255,255,255,0.8),
-        0 0 20px rgba(255,255,255,0.5),
-        0 0 30px rgba(255,255,255,0.3);
+        0 0 1vmin rgba(255,255,255,0.8),
+        0 0 2vmin rgba(255,255,255,0.5),
+        0 0 3vmin rgba(255,255,255,0.3);
     }
     #drawingControlHint.visible {
       opacity: 1;
@@ -537,7 +580,7 @@
       position: fixed;
       top: 44%;
       left: 47%;
-      transform: translate(-50%, -50%) scale(0.06);
+      transform: translate(-50%, -50%) scale(0.16);
       z-index: 27;
       pointer-events: none;
       opacity: 0;
@@ -620,12 +663,12 @@
       z-index:29;
       display:none;
       pointer-events:none;
-      bottom:30px;
+      bottom:10vmin;
       left:50%;
       transform:translateX(-50%);
       /* 容器尺寸 */
-      width:300px;
-      height:120px;
+      width:30vmin;
+      height:12vmin;
     }
     #stage1_5ProgressBar.visible{
       display:block;
@@ -635,11 +678,11 @@
       position:absolute;
       top:50%; left:50%;
       transform:translate(-50%, -50%);
-      width:70px; height:70px;
+      width:7vmin; height:7vmin;
       border-radius:50%;
-      border:2px solid rgba(255, 255, 255, 0.4); /* 更亮、更粗的边框 */
+      border:0.2vmin solid rgba(255, 255, 255, 0.4); /* 更亮、更粗的边框 */
       background:radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); /* 更明显的填充 */
-      box-shadow:0 0 10px rgba(255, 255, 255, 0.2); /* 基础发光 */
+      box-shadow:0 0 1vmin rgba(255, 255, 255, 0.2); /* 基础发光 */
       z-index:0;
       /* 待机动画：缓慢呼吸，提示用户捏这里 */
       animation:breathe 3s ease-in-out infinite;
@@ -651,89 +694,90 @@
       transform:translate(-50%, -50%) scale(0.9); /* 微微缩小，模拟受力 */
       border-color:rgba(238, 207, 161, 0.5); /* 变淡金 */
       background:radial-gradient(circle, rgba(238, 207, 161, 0.1) 0%, transparent 70%);
-      box-shadow:0 0 15px rgba(238, 207, 161, 0.2); /* 微弱光晕 */
+      box-shadow:0 0 1.5vmin rgba(238, 207, 161, 0.2); /* 微弱光晕 */
     }
     @keyframes breathe{
       0%, 100% { 
         transform:translate(-50%, -50%) scale(1); 
         border-color:rgba(255,255,255,0.4); 
-        box-shadow:0 0 10px rgba(255,255,255,0.2); 
+        box-shadow:0 0 1vmin rgba(255,255,255,0.2); 
       }
       50% { 
         transform:translate(-50%, -50%) scale(1.15); /* 呼吸幅度稍微加大 */
         border-color:rgba(255,255,255,0.9); /* 呼吸时变很亮 */
-        box-shadow:0 0 30px rgba(255,255,255,0.6); /* 强烈的呼吸光晕 */
+        box-shadow:0 0 3vmin rgba(255,255,255,0.6); /* 强烈的呼吸光晕 */
       }
     }
     /* 进度条结构 */
     .p09-bar-wrapper{
       position:absolute;
       top:50%; left:0;
-      width:100%; height:20px;
+      width:100%; height:2vmin;
       transform:translateY(-50%);
       z-index:1;
     }
     /* 背景线 (暗) */
     .p09-line-bg{
-      position:absolute; top:50%; left:0; width:100%; height:1px; 
+      position:absolute; top:50%; left:0; width:100%; height:0.1vmin; 
       background:rgba(255,255,255,0.15);
     }
     /* 进度线 (亮) */
     .p09-line-fg{
-      position:absolute; top:50%; left:0; width:0%; height:2px;
+      position:absolute; top:50%; left:0; width:0%; height:0.2vmin;
       background:#fff;
-      box-shadow:0 0 8px #fff; /* 发光强度高于圆圈 */
+      box-shadow:0 0 0.8vmin #fff; /* 发光强度高于圆圈 */
       transition:width 0.1s linear;
     }
     /* 节点 (星星) */
     .p09-dot{
-      position:absolute; top:50%; margin-top:-3px; 
-      width:6px; height:6px; 
-      background:#222; border:1px solid #555; border-radius:50%; 
+      position:absolute; top:50%; margin-top:-0.3vmin; 
+      width:0.6vmin; height:0.6vmin; 
+      background:#222; border:0.1vmin solid #555; border-radius:50%; 
       transition:all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .d1 { left:0%; }
     .d2 { left:33%; }
     .d3 { left:66%; }
-    .d4 { left:100%; margin-left:-6px; }
+    .d4 { left:100%; margin-left:-0.6vmin; }
     /* 节点激活 */
     .p09-dot.active{ 
       background:#fff; border-color:#fff; 
-      box-shadow:0 0 12px #fff, 0 0 5px var(--gold);
+      box-shadow:0 0 1.2vmin #fff, 0 0 0.5vmin var(--gold);
       transform:scale(1.6); 
     }
     #stage1Hint .countdown-text{
+      font-size: 2vmin;
       animation:stage1Glow 1.5s ease-in-out infinite;
     }
     @keyframes stage1Glow {
       0%, 100% {
         text-shadow:
-          0 0 10px rgba(255,255,255,0.8),
-          0 0 20px rgba(255,255,255,0.5),
-          0 0 30px rgba(255,255,255,0.3);
+          0 0 1vmin rgba(255,255,255,0.8),
+          0 0 2vmin rgba(255,255,255,0.5),
+          0 0 3vmin rgba(255,255,255,0.3);
       }
       50% {
         text-shadow:
-          0 0 20px rgba(255,255,255,1),
-          0 0 40px rgba(255,255,255,0.8),
-          0 0 60px rgba(255,255,255,0.5);
+          0 0 2vmin rgba(255,255,255,1),
+          0 0 4vmin rgba(255,255,255,0.8),
+          0 0 6vmin rgba(255,255,255,0.5);
       }
     }
 
     #stage3BoundaryHint{
       position:fixed;
       top:50%;
-      right:24px;
+      right:2.4vmin;
       transform:translateY(-50%);
       z-index:30;
       color:#e2f3ff;
-      font-size:12px;
-      padding:6px 12px;
-      border-radius:999px;
+      font-size:1.2vmin;
+      padding:0.6vmin 1.2vmin;
+      border-radius:99.9vmin;
       background:rgba(10,18,30,0.45);
-      border:1px solid rgba(180,220,255,0.55);
-      box-shadow:0 0 10px rgba(120,180,255,0.35);
-      text-shadow:0 0 6px rgba(120,180,255,0.7);
+      border:0.1vmin solid rgba(180,220,255,0.55);
+      box-shadow:0 0 1vmin rgba(120,180,255,0.35);
+      text-shadow:0 0 0.6vmin rgba(120,180,255,0.7);
       display:none;
       pointer-events:none;
       white-space:nowrap;
@@ -751,14 +795,14 @@
       left: 50%;
       transform: translateX(-50%);
       color: white;
-      font-size: 18px;
+      font-size: 1.8vmin;
       font-family: "Kan410TyposStd", "漢字タイポス４１０ Std", "Helvetica Neue", Arial, sans-serif;
       line-height: 1.8;
       text-align: center;
       white-space: nowrap;
       opacity: 1;
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
-                   0 0 20px rgba(255, 255, 255, 0.5);
+      text-shadow: 0 0 1vmin rgba(255, 255, 255, 0.8),
+                   0 0 2vmin rgba(255, 255, 255, 0.5);
       transition: opacity 1.5s ease-out, transform 1.5s ease-out;
       width: 100%;
     }
@@ -771,13 +815,13 @@
 .transparent {
   /* 把底色改得更淡，让星空更透出来 */
   background: rgba(10, 14, 28, 0.05) !important;
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
+  backdrop-filter: blur(0.4vmin) !important;
+  -webkit-backdrop-filter: blur(0.4vmin) !important;
 
   /* 阴影也稍微减弱一点，避免整块看起来太"沉" */
   box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.2),
-    0 0 20px rgba(160, 180, 255, 0.15) !important;
+    0 0.8vmin 2vmin rgba(0, 0, 0, 0.2),
+    0 0 2vmin rgba(160, 180, 255, 0.15) !important;
 }
 
 .transparent::before {
@@ -794,7 +838,7 @@
     transparent 70%
   );
 
-  filter: blur(12px);
+  filter: blur(1.2vmin);
   z-index: -1;
   pointer-events: none;
 }
@@ -864,7 +908,7 @@
   </div>
 </div>
 
-<div id="instructionText" style="position:fixed;bottom:150px;left:50%;transform:translateX(-50%);z-index:100;font-size:12px;opacity:0.85;display:block;color:rgba(255,255,255,0.85);text-align:center;">片手を前へ伸ばし、開いたり閉じたりしてみましょう。<br>手を開き続けると、銀河の中へ進んで、ゲームがスタートします。</div>
+<div id="instructionText" style="position:fixed;bottom:15vmin;left:50%;transform:translateX(-50%);z-index:100;font-size:1.2vmin;opacity:0.85;display:block;color:rgba(255,255,255,0.85);text-align:center;">片手を前へ伸ばし、開いたり閉じたりしてみましょう。<br>手を開き続けると、銀河の中へ進んで、ゲームがスタートします。</div>
 
 <div id="warpOverlay" style="position:fixed;inset:0;z-index:90;background:rgba(0,0,0,0.3);display:none;pointer-events:none;transition:opacity 1.5s ease-in-out;"></div>
 
@@ -903,16 +947,23 @@
 <div id="fadeOverlay"></div>
 
 <div id="toolOverlay">
-  <div class="toolBuoy" data-tool="pen">
-    <span class="toolIcon">✦</span>
+  <div class="toolBuoy active" data-tool="pen">
+    <svg viewBox="0 0 24 24">
+      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+    </svg>
     <span class="toolLabel">画筆</span>
   </div>
   <div class="toolBuoy" data-tool="eraser">
-    <span class="toolIcon">⌦</span>
+    <svg viewBox="0 0 24 24">
+      <path d="M15.14 3c-.51 0-1.02.2-1.41.59L2.59 14.73c-.78.78-.78 2.05 0 2.83L5.17 20.1c.78.78 2.05.78 2.83 0l11.14-11.14c.78-.78.78-2.05 0-2.83l-2.58-2.58C16.16 3.2 15.65 3 15.14 3z"/>
+    </svg>
     <span class="toolLabel">消しゴム</span>
   </div>
   <div class="toolBuoy" data-tool="undo">
-    <span class="toolIcon">↶</span>
+    <svg viewBox="0 0 24 24">
+      <path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/>
+    </svg>
+    <span class="toolLabel">戻る</span>
   </div>
 </div>
 
@@ -1097,8 +1148,9 @@ function updateParticleCallAnimation(){
       for(let id of tipIds){
         let lm = hand[id];
         if(!lm) continue;
-        let x = mirrorX(lm.x * W);
-        let y = lm.y * H;
+        const coords = getScreenCoordinates(lm);
+        let x = coords.x;
+        let y = coords.y;
         // screenToWorld3D 会基于当前 Z=1200 的相机，正确算出 Z=0 平面的坐标
         targets.push(screenToWorld3D(x, y, 0));
       }
@@ -1235,9 +1287,8 @@ function updateActivityTime() {
     lastActivityTime = performance.now();
     if (inactivityTimer) clearTimeout(inactivityTimer);
     inactivityTimer = setTimeout(() => {
-        // 强制刷新页面，这是重置 Three.js 和 MediaPipe 最稳定、无 Bug 的方式
-        // 画廊数据已在 localStorage 中，不会丢失
-        if (stage !== 0) window.location.reload();
+        // 自动返回 Stage0，不刷新页面以避免重复请求摄像头权限
+        if (stage !== 0) enterStage0();
     }, INACTIVITY_TIMEOUT);
 }
 
@@ -1388,41 +1439,7 @@ function enterStage0(isFromReturn = false){
   }
   lastTitleBackgroundTime = performance.now();
   
-  // 9. 重启摄像头与 MediaPipe 手势识别
-  const video = document.getElementById("videoElement");
-  if(video && video.srcObject) {
-    const tracks = video.srcObject.getTracks();
-    tracks.forEach(track => track.stop());
-    video.srcObject = null;
-  }
-  
-  // 重新初始化摄像头
-  async function reinitCamera() {
-    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
-    try{
-      const stream = await navigator.mediaDevices.getUserMedia({video:true});
-      if(video) {
-        video.srcObject = stream;
-        await video.play().catch(()=>{});
-      }
-    }catch(err){
-      console.log("摄像头重启失败:", err);
-    }
-  }
-  reinitCamera();
-  
-  // 重启 MediaPipe
-  if(camMP) {
-    try {
-      camMP.stop();
-    } catch(e) {}
-    camMP = null;
-  }
-  setTimeout(() => {
-    startMediaPipeCamera();
-  }, 100);
-  
-  // 重置手势数据
+  // 9. 重置手势数据（不重新启动摄像头或 MediaPipe，避免重复请求权限）
   handsData = [];
   
   // 10. 重置全局变量
@@ -1456,6 +1473,7 @@ function enterStage0(isFromReturn = false){
   titleTargetRotationSpeed = 0.033;
   titleHandWasFist = false;
   titleHandWasOpen = false;
+  fistFrameCount = 0; // 重置握拳检测缓冲
   
   // 重置穿越文字状态
   warpTextState.isActive = false;
@@ -1714,6 +1732,7 @@ let titleTargetRotationSpeed = 0.033;
 // 标题手势状态
 let titleHandWasFist = false;
 let titleHandWasOpen = false;
+let fistFrameCount = 0; // 握拳检测缓冲帧计数
 
 let stage2Warping = false;
 let stage2WarpStart = 0;
@@ -1741,6 +1760,41 @@ const uiCtx = uiCanvas.getContext("2d");
 
 function mirrorX(x){ return W - x; }
 function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+
+// 计算摄像头画面在屏幕上的实际缩放比例和偏移量
+// 模拟 object-fit: cover 的逻辑来计算坐标，解决宽高比失调问题
+function getScreenCoordinates(landmark) {
+  const video = document.getElementById("videoElement");
+  if (!video || !video.videoWidth) {
+    // 降级处理：如果没有视频数据，回退到原来的简单拉伸
+    return { x: mirrorX(landmark.x * W), y: landmark.y * H };
+  }
+
+  const vidW = video.videoWidth;
+  const vidH = video.videoHeight;
+  const screenW = W;
+  const screenH = H;
+
+  // 模拟 object-fit: cover 的逻辑
+  const scale = Math.max(screenW / vidW, screenH / vidH);
+  
+  // 计算视频在屏幕上居中后的偏移量
+  const scaledW = vidW * scale;
+  const scaledH = vidH * scale;
+  const offsetX = (scaledW - screenW) / 2;
+  const offsetY = (scaledH - screenH) / 2;
+
+  // 1. 将 0-1 的 landmark 坐标映射到 缩放后的视频尺寸
+  // 2. 减去偏移量，使其对齐屏幕中心
+  let rawX = landmark.x * scaledW - offsetX;
+  let rawY = landmark.y * scaledH - offsetY;
+
+  // 3. 镜像处理 (Mirror)
+  // MediaPipe 输出的 x 是从左到右 (0->1)。镜像要在映射后翻转。
+  let finalX = screenW - rawX; 
+  
+  return { x: finalX, y: rawY };
+}
 
 // 标准化星座形状：居中并调整大小
 function normalizeConstellation(points) {
@@ -1847,14 +1901,14 @@ const STAGE1_5_PROGRESS_GRACE_PERIOD = 300; // 宽限期（毫秒），允许短
 // Stage2 画笔误触检测状态
 let stage2LastPos = null; // 上一帧的位置
 let stage2LastTime = null; // 上一帧的时间
-const STAGE2_MAX_SPEED = 3000; // 最大允许速度（像素/秒）
-const STAGE2_MAX_JUMP_DIST = 150; // 最大允许位置瞬移距离（像素）
+const STAGE2_MAX_SPEED = 9000; // 最大允许速度（像素/秒）
+const STAGE2_MAX_JUMP_DIST = 400; // 最大允许位置瞬移距离（像素）
 
 // Stage1.5 画笔误触检测状态（与 Stage2 使用相同的检测逻辑）
 let stage1_5LastPos = null; // 上一帧的位置
 let stage1_5LastTime = null; // 上一帧的时间
-const STAGE1_5_MAX_SPEED = 3000; // 最大允许速度（像素/秒）
-const STAGE1_5_MAX_JUMP_DIST = 150; // 最大允许位置瞬移距离（像素）
+const STAGE1_5_MAX_SPEED = 9000; // 最大允许速度（像素/秒）
+const STAGE1_5_MAX_JUMP_DIST = 400; // 最大允许位置瞬移距离（像素）
 
 // 提取连线算法为独立函数，供stage1和stage3共用
 function computeConstellationEdges(pts, maxDistance = null){
@@ -1883,7 +1937,8 @@ function computeConstellationEdges(pts, maxDistance = null){
     }
   }
   lr.sort((a,b)=>a.dist-b.dist);
-  const BRIDGE_COUNT = Math.min(4, lr.length);
+  // 只允许连接最近的 1-2 条线，避免过多的长距离连线
+  const BRIDGE_COUNT = Math.min(2, lr.length);
   const bridgeEdges = lr.slice(0, BRIDGE_COUNT);
 
   const parent = new Array(n);
@@ -1911,7 +1966,12 @@ function computeConstellationEdges(pts, maxDistance = null){
 
   const EXTRA_MAX = 10;
   const MAX_DEGREE = 6;
-  const EXTRA_MAX_DIST = maxDistance || Math.max(W, H) * 0.12;
+  // 1. 设置一个更合理的上限。在大屏上，我们希望星星只和"附近"的连，而不是跨越半个屏幕去连。
+  // 我们可以限制最大连接距离为屏幕宽度的 6%~8%，或者设置一个像素上限（例如 300px）。
+  const baseDist = Math.max(W, H) * 0.08; // 降低比例系数 (0.12 -> 0.08)
+  // 2. 增加一个绝对像素限制 (例如在4K屏上也不要超过 350px)
+  const cappedDist = Math.min(baseDist, 350);
+  const EXTRA_MAX_DIST = maxDistance || cappedDist;
   const degree = new Array(n).fill(0);
   for(const e of chosen){ degree[e.i]++; degree[e.j]++; }
 
@@ -1949,7 +2009,7 @@ function drawStage1Polyline(pts, targetCtx = null, forcedEdges = null){
   c.lineCap="round";
   c.lineJoin="round";
 
-  c.lineWidth = 4.5;
+  c.lineWidth = 6.75; // 从 4.5 放大到 6.75 (1.5倍)
   c.strokeStyle = "rgba(255,255,255,0.28)";
   for(const e of chosen){
     const p1=pts[e.i], p2=pts[e.j];
@@ -1959,7 +2019,7 @@ function drawStage1Polyline(pts, targetCtx = null, forcedEdges = null){
     c.stroke();
   }
 
-  c.lineWidth = 1.2;
+  c.lineWidth = 1.8; // 从 1.2 放大到 1.8 (1.5倍)
   c.strokeStyle = "rgba(255,255,255,0.85)";
   for(const e of chosen){
     const p1=pts[e.i], p2=pts[e.j];
@@ -1982,7 +2042,7 @@ function drawStage1Polyline(pts, targetCtx = null, forcedEdges = null){
       const a = 0.25 + Math.random()*0.45;
       c.fillStyle = `rgba(255,255,255,${a})`;
       c.beginPath();
-      c.arc(px,py,1.5,0,Math.PI*2);
+      c.arc(px,py,2.25,0,Math.PI*2); // 从 1.5 放大到 2.25 (1.5倍)
       c.fill();
     }
   }
@@ -1991,17 +2051,17 @@ function drawStage1Polyline(pts, targetCtx = null, forcedEdges = null){
 
   for(let p of pts){
     c.beginPath();
-    c.arc(p.x,p.y,14,0,Math.PI*2);
+    c.arc(p.x,p.y,21,0,Math.PI*2); // 从 14 放大到 21 (1.5倍)
     c.fillStyle = "rgba(160,200,255,0.08)";
     c.fill();
 
     c.beginPath();
-    c.arc(p.x,p.y,8,0,Math.PI*2);
+    c.arc(p.x,p.y,12,0,Math.PI*2); // 从 8 放大到 12 (1.5倍)
     c.fillStyle = "rgba(220,240,255,0.28)";
     c.fill();
 
     c.beginPath();
-    c.arc(p.x,p.y,3.6,0,Math.PI*2);
+    c.arc(p.x,p.y,5.4,0,Math.PI*2); // 从 3.6 放大到 5.4 (1.5倍)
     c.fillStyle = "#ffffff";
     c.fill();
   }
@@ -2047,8 +2107,8 @@ function doStage1(){
         let right = (left===A)? B : A;
         const ids=[4,8,12,20];
         let pts=[];
-        for(let i of ids) pts.push({x:mirrorX(left[i].x*W),  y:left[i].y*H});
-        for(let i of ids) pts.push({x:mirrorX(right[i].x*W), y:right[i].y*H});
+        for(let i of ids) pts.push(getScreenCoordinates(left[i]));
+        for(let i of ids) pts.push(getScreenCoordinates(right[i]));
         
         // 实时连线绘制到 UI 层
         drawStage1Polyline(pts, uiCtx);
@@ -2166,8 +2226,8 @@ function doStage1(){
 
   const ids=[4,8,12,20];
   let pts=[];
-  for(let i of ids) pts.push({x:mirrorX(left[i].x*W),  y:left[i].y*H});
-  for(let i of ids) pts.push({x:mirrorX(right[i].x*W), y:right[i].y*H});
+  for(let i of ids) pts.push(getScreenCoordinates(left[i]));
+  for(let i of ids) pts.push(getScreenCoordinates(right[i]));
 
   // 实时连线绘制到 UI 层
   drawStage1Polyline(pts, uiCtx);
@@ -2608,10 +2668,12 @@ function doStage1_5(){
     }
     
     // 手势坐标（画布坐标系统）
-    let handX = mirrorX(h[8].x * W);
-    let handY = h[8].y * H;
-    let thumbX = mirrorX(h[4].x * W);
-    let thumbY = h[4].y * H;
+    const p8 = getScreenCoordinates(h[8]);
+    const p4 = getScreenCoordinates(h[4]);
+    let handX = p8.x;
+    let handY = p8.y;
+    let thumbX = p4.x;
+    let thumbY = p4.y;
     
     // 计算手指中心位置（画布坐标）
     const fingerCenterX = (handX + thumbX) / 2;
@@ -2916,6 +2978,31 @@ function drawEraserDashedBox(p, options={}){
   uiCtx.restore();
 }
 
+// 手势悬停检测函数：根据指尖位置高亮按钮
+function updateToolHoverVisuals(pos) {
+  // 只在 Stage 2 且工具栏显示时运行
+  const overlay = document.getElementById("toolOverlay");
+  if (!overlay || overlay.style.display === "none") return;
+  const buttons = document.querySelectorAll('.toolBuoy');
+  
+  buttons.forEach(btn => {
+    const rect = btn.getBoundingClientRect();
+    
+    // 稍微扩大一点识别范围 (+10px)，让手感更宽松
+    const padding = 10;
+    const isHovering = 
+      pos.x >= rect.left - padding && 
+      pos.x <= rect.right + padding && 
+      pos.y >= rect.top - padding && 
+      pos.y <= rect.bottom + padding;
+    if (isHovering) {
+      btn.classList.add('hand-hover');
+    } else {
+      btn.classList.remove('hand-hover');
+    }
+  });
+}
+
 function eraseStrokeDataAtPoint(px, py, radius){
   if(strokePolylines.length===0) return;
   const updated=[];
@@ -3068,6 +3155,8 @@ function doStage2(){
 
   let d = Math.hypot(x-tx, y-ty);
   let pos={x,y};
+  // 【新增】调用手势悬停检测
+  updateToolHoverVisuals(pos);
   const now = performance.now();
 
   // 速度检测和位置瞬移检测
@@ -3274,7 +3363,7 @@ function startStage2Warp(){
     artCanvas.style.display = "block";
     artCanvas.style.transition = "none";
     artCanvas.style.transform = "scale(1)";
-    artCanvas.style.filter = "blur(0px)";
+    artCanvas.style.filter = "blur(0vmin)";
     artCanvas.style.opacity = "1";
     
     // 强制重排
@@ -3283,7 +3372,7 @@ function startStage2Warp(){
     // 开始溶解动画：缩小、模糊、透明
     artCanvas.style.transition = "transform 400ms cubic-bezier(0.4, 0, 0.2, 1), filter 400ms ease-out, opacity 400ms ease-out";
     artCanvas.style.transform = "scale(0.1)";
-    artCanvas.style.filter = "blur(25px)";
+    artCanvas.style.filter = "blur(2.5vmin)";
     artCanvas.style.opacity = "0";
     
     // 动画结束后隐藏
@@ -3321,11 +3410,15 @@ function detectStage2HandsAndMaybeWarp(){
 
   // 1. 坐标计算 (用于防误触检测)
   // 手 1
-  let h1x = mirrorX(hand1[8].x * W), h1y = hand1[8].y * H; // 食指
-  let t1x = mirrorX(hand1[4].x * W), t1y = hand1[4].y * H; // 拇指
+  let p1_8 = getScreenCoordinates(hand1[8]);
+  let p1_4 = getScreenCoordinates(hand1[4]);
+  let h1x = p1_8.x, h1y = p1_8.y; // 食指
+  let t1x = p1_4.x, t1y = p1_4.y; // 拇指
   // 手 2
-  let h2x = mirrorX(hand2[8].x * W), h2y = hand2[8].y * H; // 食指
-  let t2x = mirrorX(hand2[4].x * W), t2y = hand2[4].y * H; // 拇指
+  let p2_8 = getScreenCoordinates(hand2[8]);
+  let p2_4 = getScreenCoordinates(hand2[4]);
+  let h2x = p2_8.x, h2y = p2_8.y; // 食指
+  let t2x = p2_4.x, t2y = p2_4.y; // 拇指
 
   // 2. 【防误触核心 A：停笔检测】
   // 检测两只手是否都在捏合。如果任意一只手捏合（距离 < PINCH_OFF），说明还在画画，强制中断。
@@ -3340,8 +3433,10 @@ function detectStage2HandsAndMaybeWarp(){
   // 3. 【防误触核心 B：水平对齐检测】
   // 双手向前推时，两只手的高度应该差不多。如果高度差过大（>250px），视为路人干扰或无效动作。
   // 使用手腕位置(点0)来判断高度更稳定
-  let w1y = hand1[0].y * H;
-  let w2y = hand2[0].y * H;
+  let w1 = getScreenCoordinates(hand1[0]);
+  let w2 = getScreenCoordinates(hand2[0]);
+  let w1y = w1.y;
+  let w2y = w2.y;
   if (Math.abs(w1y - w2y) > 250) {
     stage2PushInitialDist = null;
     return;
@@ -3351,9 +3446,9 @@ function detectStage2HandsAndMaybeWarp(){
   // 原理：当手推向屏幕时，手掌在画面中的像素面积会变大。
   // 使用 "手腕(0) 到 中指根部(9)" 的距离作为基准，这个距离比指尖更稳定，不受手指弯曲影响。
   const getSize = (h) => {
-    let wx = mirrorX(h[0].x * W), wy = h[0].y * H;
-    let mx = mirrorX(h[9].x * W), my = h[9].y * H;
-    return Math.hypot(wx - mx, wy - my);
+    let p0 = getScreenCoordinates(h[0]);
+    let p9 = getScreenCoordinates(h[9]);
+    return Math.hypot(p0.x - p9.x, p0.y - p9.y);
   };
 
   const size1 = getSize(hand1);
@@ -4986,7 +5081,7 @@ function fadeUpCurrentLine(lineIndex) {
   const container = document.getElementById('warpTextContainer');
   if (!container) return;
   
-  const LINE_SPACING = 60;
+  const LINE_SPACING = 6; // vmin
   const upShiftDistance = -LINE_SPACING;
   const FADE_OUT_DELAY = 5000; // 5秒后完全消失
   const isLastLine = lineIndex === 4; // 最后一句（索引4）原地淡出，不上滑
@@ -4998,7 +5093,7 @@ function fadeUpCurrentLine(lineIndex) {
       // 先上移
       const currentY = parseFloat(lineEl.dataset.translateY || '0');
       const newY = currentY + upShiftDistance;
-      lineEl.style.transform = `translateX(-50%) translateY(${newY}px)`;
+      lineEl.style.transform = `translateX(-50%) translateY(${newY}vmin)`;
       lineEl.dataset.translateY = newY;
     }
     
@@ -5021,7 +5116,7 @@ function fadeUpCurrentLine(lineIndex) {
       if (idx < lineIndex && idx !== 4) { // 最后一句（索引4）不上移
         const currentY = parseFloat(line.dataset.translateY || '0');
         const newY = currentY + upShiftDistance;
-        line.style.transform = `translateX(-50%) translateY(${newY}px)`;
+        line.style.transform = `translateX(-50%) translateY(${newY}vmin)`;
         line.dataset.translateY = newY;
       }
     });
@@ -5149,8 +5244,8 @@ function detectTitleHands() {
     }
     const handOpen = openCount >= 4;
     
-    // 检测是否握拳
-    const threshold = handSize * 0.55;
+    // 检测是否握拳（放宽阈值，扩大1.6倍）
+    const threshold = handSize * 0.55 * 1.6; // 从 0.55 放宽到 0.88
     const tips = [8, 12, 16, 20];
     let closedCount = 0;
     tips.forEach(tipIdx => {
@@ -5158,22 +5253,31 @@ function detectTitleHands() {
         closedCount++;
       }
     });
-    if (getDist(hand[4], palmCenter) < threshold * 1.5) {
+    if (getDist(hand[4], palmCenter) < threshold * 2.4) { // 从 1.5 放宽到 2.4 (1.5 * 1.6)
       closedCount++;
     }
     const handClosed = closedCount >= 5;
     
     if (handOpen) {
-      // 手掌张开：向前穿越
+      // 手掌张开：向前穿越（优先判断，不改动张开手的逻辑）
       targetTitleWarpSpeed = -0.4;
       titleHandWasOpen = true;
+      fistFrameCount = 0; // 张开手时重置握拳缓冲
     } else if (handClosed) {
-      // 握拳：后退
-      targetTitleWarpSpeed = 0.25;
-      titleHandWasFist = true;
+      // 握拳检测缓冲：需要连续2帧满足条件
+      fistFrameCount++;
+      if (fistFrameCount >= 2) {
+        // 握拳：后退
+        targetTitleWarpSpeed = 0.25;
+        titleHandWasFist = true;
+      } else {
+        // 缓冲中，保持当前状态
+        targetTitleWarpSpeed = 0;
+      }
     } else {
       // 手势不明确时，停止穿越
       targetTitleWarpSpeed = 0;
+      fistFrameCount = 0; // 非握拳状态，重置缓冲计数
     }
   } else {
     targetTitleWarpSpeed = 0;
@@ -5537,7 +5641,7 @@ function showTip(message) {
   
   // 重置对齐方式为居中（避免被顶部对齐影响）
   tip.style.alignItems = "center";
-  tipText.style.marginTop = "70px"; // 恢复默认的margin-top
+  tipText.style.marginTop = "7vmin"; // 恢复默认的margin-top
   
   // 强制重排，确保样式生效
   void tip.offsetWidth;
@@ -5561,7 +5665,7 @@ function showTipTop(message) {
   
   // 临时修改对齐方式为顶部对齐
   tip.style.alignItems = "flex-start";
-  tipText.style.marginTop = "80px"; // 距离顶部80px
+  tipText.style.marginTop = "8vmin"; // 距离顶部80px
   
   // 强制重排，确保样式生效
   void tip.offsetWidth;
@@ -5603,9 +5707,9 @@ function createStars(layer, count, radius, size, delay, opacity) {
     const x = Math.cos(rad) * radius;
     const y = Math.sin(rad) * radius;
     
-    star.style.width = size + 'px';
-    star.style.height = size + 'px';
-    star.style.setProperty('--target-transform', `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`);
+    star.style.width = size + 'vmin';
+    star.style.height = size + 'vmin';
+    star.style.setProperty('--target-transform', `translate(calc(-50% + ${x}vmin), calc(-50% + ${y}vmin))`);
     star.style.setProperty('--target-opacity', opacity);
     star.style.animationDelay = (delay + i * 0.05) + 's';
     
@@ -5615,9 +5719,9 @@ function createStars(layer, count, radius, size, delay, opacity) {
 
 // Initialize all star layers
 function initStars() {
-  createStars('layer1', 8, 200, 4, 0.6, 0.8);
-  createStars('layer2', 12, 150, 3, 0.8, 0.7);
-  createStars('layer3', 16, 100, 2, 1.0, 0.6);
+  createStars('layer1', 8, 20, 0.4, 0.6, 0.8);
+  createStars('layer2', 12, 15, 0.3, 0.8, 0.7);
+  createStars('layer3', 16, 10, 0.2, 1.0, 0.6);
 }
 
 function showStage2To3Tip(){
@@ -6098,7 +6202,7 @@ async function generateConstellationQR(rec) {
   // 创建简单的加载提示
   const loadingDiv = document.createElement("div");
   loadingDiv.id = "uploadLoading";
-  loadingDiv.style.cssText = "position:fixed; bottom:50px; right:50px; color:white; background:rgba(0,0,0,0.8); padding:10px 20px; border-radius:8px; z-index:200;";
+  loadingDiv.style.cssText = "position:fixed; bottom:5vmin; right:5vmin; color:white; background:rgba(0,0,0,0.8); padding:1vmin 2vmin; border-radius:0.8vmin; z-index:200;";
   loadingDiv.innerText = "星を空へ送っています... (Uploading...)";
   document.body.appendChild(loadingDiv);
 
@@ -6135,27 +6239,39 @@ async function generateConstellationQR(rec) {
     qrContainer.id = "qrOverlay";
     qrContainer.className = "transparent";
     qrContainer.style.cssText = `
-      position: fixed; bottom: 30px; right: 30px; 
-      padding: 24px; border-radius: 16px; z-index: 100;
-      display: flex; flex-direction: column; align-items: center; gap: 12px;
-      opacity: 0; transform: translateY(20px); transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+      position: fixed; bottom: 3vmin; right: 3vmin; 
+      padding: 2.4vmin; border-radius: 1.6vmin; z-index: 100;
+      display: flex; flex-direction: column; align-items: center; gap: 1.2vmin;
+      opacity: 0; transform: translateY(2vmin); transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
       pointer-events: auto;
       background: rgba(10, 14, 28, 0.05) !important;
-      backdrop-filter: blur(4px) !important;
-      -webkit-backdrop-filter: blur(4px) !important;
+      backdrop-filter: blur(0.4vmin) !important;
+      -webkit-backdrop-filter: blur(0.4vmin) !important;
     `;
     
     const qrDiv = document.createElement("div");
-    qrDiv.style.cssText = "background: rgba(255, 255, 255, 0.85); padding: 8px; border-radius: 8px;";
+    qrDiv.style.cssText = "background: rgba(255, 255, 255, 0.85); padding: 0.8vmin; border-radius: 0.8vmin;";
     const label = document.createElement("div");
-    label.innerHTML = "あなたの星を持ち帰る<br><span style='font-size:10px; opacity:0.7; display:block; margin-top:4px;'>Take your star home</span>";
-    label.style.cssText = "color: #eaf6ff; font-size: 14px; font-family: 'Kan410TyposStd', sans-serif; text-align: center; letter-spacing: 1px; line-height: 1.4;";
+    label.innerHTML = "あなたの星を持ち帰る<br><span style='font-size:1vmin; opacity:0.7; display:block; margin-top:0.4vmin;'>Take your star home</span>";
+    label.style.cssText = "color: #eaf6ff; font-size: 1.4vmin; font-family: 'Kan410TyposStd', sans-serif; text-align: center; letter-spacing: 0.1vmin; line-height: 1.4;";
     
     const closeBtn = document.createElement("div");
     closeBtn.className = "qr-close-btn";
     closeBtn.innerHTML = "×";
-    closeBtn.style.cssText = "position:absolute; top:8px; right:12px; color:rgba(255,255,255,0.5); cursor:pointer; font-size:18px;";
-    closeBtn.onclick = () => { qrContainer.style.opacity = "0"; setTimeout(() => qrContainer.remove(), 800); };
+    closeBtn.style.cssText = "position:absolute; top:0.8vmin; right:1.2vmin; color:rgba(255,255,255,0.5); cursor:pointer; font-size:1.8vmin;";
+    
+    // 用于存储自动隐藏定时器，以便手动关闭时清除
+    let autoHideTimer = null;
+    const hideQR = () => {
+      if (autoHideTimer) {
+        clearTimeout(autoHideTimer);
+        autoHideTimer = null;
+      }
+      qrContainer.style.opacity = "0";
+      setTimeout(() => qrContainer.remove(), 800);
+    };
+    
+    closeBtn.onclick = hideQR;
 
     qrContainer.appendChild(closeBtn);
     qrContainer.appendChild(qrDiv);
@@ -6176,6 +6292,11 @@ async function generateConstellationQR(rec) {
     requestAnimationFrame(() => {
       qrContainer.style.opacity = "1";
       qrContainer.style.transform = "translateY(0)";
+      
+      // 15秒后自动隐藏二维码
+      autoHideTimer = setTimeout(() => {
+        hideQR();
+      }, 15000);
     });
 
   } catch (err) {
@@ -6308,7 +6429,7 @@ function enterStage3FromStage2(){
   // 相机对准最新创作的星座（位置在 0, 0, -1800）
   camTargetX = 0;
   camTargetY = y;
-  camTargetZ = CONSTELLATION_Z;
+  camTargetZ = titleInitialZ;
   
   // 显示完成标语
   showStage2To3Tip();
@@ -6581,7 +6702,13 @@ initUserCamera();
 let hands = null;
 if(typeof Hands !== "undefined"){
   hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
-  hands.setOptions({ maxNumHands:2, modelComplexity:1, minDetectionConfidence:0.6, minTrackingConfidence:0.6 });
+  hands.setOptions({ 
+    maxNumHands:2, 
+    modelComplexity:1, 
+    // 降低一点置信度阈值，防止远距离手偶尔"消失"
+    minDetectionConfidence:0.5, 
+    minTrackingConfidence:0.5 
+  });
   hands.onResults(res=>{
     handsData = res.multiHandLandmarks || [];
     
